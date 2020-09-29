@@ -12,15 +12,16 @@ locals {
   pj                 = "ecs-cicd"
   vpc_id             = "vpc-b9eabcd1"
   subnet             = "subnet-855250cc"
-  registration_token = "d47-uL1UhRyiC5X-VFuB"
+  github_url         = "https://github.com/mori-ecs-cicd"
+  registration_token = "AMHYG4BDN3YHSID24QJ34GK7ONEFE"
   tags     = {
     pj     = "ecs-cicd"
     ownner = "nobody"
   }
 }
 
-module "gitlab-ecs-cicd-gitlab-runner" {
-  source = "../../../modules/environment/gitlab-runner-ec2"
+module "github-runner" {
+  source = "../../../modules/environment/github-runner-ec2"
 
   # common parameter
   pj     = local.pj
@@ -28,17 +29,17 @@ module "gitlab-ecs-cicd-gitlab-runner" {
   tags   = local.tags
 
   # module parameter
-  ec2_gitlab_url             = "https://gitlab.com"
+  ec2_github_url             = local.github_url
   ec2_registration_token     = local.registration_token
   ec2_runner_name            = "${local.pj}-runner"
   ec2_runner_tags            = [local.pj]
   ec2_instance_type          = "t2.micro"
   ec2_subnet_id              = local.subnet
   ec2_root_block_volume_size = "30"
-  ec2_key_name               = ""
+  ec2_key_name               = "mori"
 }
 
-module "gitlab-ecs-cicd-ecs-cluster" {
+module "ecs-cluster" {
   source = "../../../modules/environment/ecs-cluster"
 
   # common parameter
