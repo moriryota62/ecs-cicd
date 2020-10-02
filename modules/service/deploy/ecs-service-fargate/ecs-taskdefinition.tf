@@ -1,14 +1,12 @@
+data "aws_region" "current" {}
+
 resource "aws_ecs_task_definition" "this" {
-  # family                   = var.task_name
-  # cpu                      = var.task_cpu
-  # memory                   = var.task_memory
   family                   = "dummy"
   cpu                      = 256
   memory                   = 512
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
 
-  # task_role_arn      = var.task_role_arn
   execution_role_arn = var.task_execution_role_arn
 
   container_definitions = <<-JSON
@@ -27,7 +25,7 @@ resource "aws_ecs_task_definition" "this" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/${var.pj}-cluster/${var.app}",
-          "awslogs-region": "ap-northeast-1",
+          "awslogs-region": "${data.aws_region.current.name}",
           "awslogs-stream-prefix": "dummy"
         }
       }

@@ -24,31 +24,10 @@ variable "tags" {
   type        = map(string)
 }
 
-# module parameter
-## ecs-taskdefinition.tf
-# variable "task_name" {
-#   description = "タスクの名前"
-#   type        = string
-# }
-
-# variable "task_cpu" {
-#   description = "タスクのCPU量指定"
-#   type        = number
-# }
-
-# variable "task_memory" {
-#   description = "タスクのmemory量指定"
-#   type        = number
-# }
-
 variable "task_execution_role_arn" {
   description = "タスクを実行するIAMロールのARN"
   type        = string
 }
-
-# variable "container_definitions" {
-#   description = "コンテナ定義のJSON"
-# }
 
 ## ecs-service.tf
 variable "service_name" {

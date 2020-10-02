@@ -4,14 +4,15 @@ terraform {
 
 provider "aws" {
   version = ">= 3.5.0"
-  region  = "ap-northeast-1"
+  # region  = "ap-northeast-1"
+  region  = "us-east-2"
 }
 
 # common parameter settings
 locals {
   pj                 = "ecs-cicd"
-  vpc_id             = "vpc-b9eabcd1"
-  subnet             = "subnet-855250cc"
+  vpc_id             = "vpc-01ebee9c826125662"
+  subnet             = "subnet-0de4a0053b586f886"
   registration_token = "d47-uL1UhRyiC5X-VFuB"
   tags     = {
     pj     = "ecs-cicd"
@@ -36,22 +37,4 @@ module "gitlab-ecs-cicd-gitlab-runner" {
   ec2_subnet_id              = local.subnet
   ec2_root_block_volume_size = "30"
   ec2_key_name               = ""
-}
-
-module "gitlab-ecs-cicd-ecs-cluster" {
-  source = "../../../modules/environment/ecs-cluster"
-
-  # common parameter
-  pj   = local.pj
-  tags = local.tags
-
-  # module parameter
-  cluster_name = "${local.pj}-cluster"
-}
-
-module "code-iam" {
-  source = "../../../modules/environment/code-iam"
-
-  # common parameter
-  pj   = local.pj
 }

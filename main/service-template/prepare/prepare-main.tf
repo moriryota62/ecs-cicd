@@ -1,10 +1,11 @@
 terraform {
-  required_version = "0.13.2"
+  required_version = ">= 0.13.2"
 }
 
 provider "aws" {
-  version = "3.5.0"
-  region  = "ap-northeast-1"
+  version = ">= 3.5.0"
+  # region  = "ap-northeast-1"
+  region  = "us-east-2"
 }
 
 # common parameter settings

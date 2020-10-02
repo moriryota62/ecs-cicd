@@ -1,10 +1,11 @@
 terraform {
-  required_version = "0.13.2"
+  required_version = ">= 0.13.2"
 }
 
 provider "aws" {
-  version = "3.5.0"
-  region  = "ap-northeast-1"
+  version = ">= 3.5.0"
+  # region  = "ap-northeast-1"
+  region  = "us-east-2"
 }
 
 # common parameter settings
@@ -12,8 +13,10 @@ locals {
   pj         = "ecs-cicd"
   app        = "example"
   app_full   = "${local.pj}-${local.app}"
-  vpc_id     = "vpc-b9eabcd1"
-  subnet_ids = ["subnet-855250cc","subnet-0cd81d4621eda10f2"]
+  # vpc_id     = "vpc-b9eabcd1"
+  # subnet_ids = ["subnet-855250cc","subnet-0cd81d4621eda10f2"]
+  vpc_id     = "vpc-01ebee9c826125662"
+  subnet_ids = ["subnet-0de4a0053b586f886","subnet-0e75046eccbffc93a"]
   tags     = {
     pj     = "ecs-cicd"
     app    = "example"
@@ -22,6 +25,7 @@ locals {
 }
 
 data "aws_caller_identity" "self" { }
+data "aws_region" "current" {}
 
 module "alb" {
   source = "../../../modules/service/deploy/alb"
@@ -51,7 +55,7 @@ module "service" {
 
   ## service
   service_name              = "${local.app_full}-service"
-  service_cluster_arn       = "arn:aws:ecs:ap-northeast-1:${data.aws_caller_identity.self.account_id}:cluster/${local.pj}-cluster"
+  service_cluster_arn       = "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.self.account_id}:cluster/${local.pj}-cluster"
   service_desired_count     = 1
   service_allow_inbound_sgs = [module.alb.alb_sg_id]
   service_subnets           = local.subnet_ids
