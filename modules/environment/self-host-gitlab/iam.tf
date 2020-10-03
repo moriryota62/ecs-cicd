@@ -1,71 +1,46 @@
-data "aws_iam_policy_document" "assume_role" {
+# 自動スケジュール設定
+# SSM Automation用のIAM Role
+data "aws_iam_policy_document" "gitlab_ssm_automation_trust" {
   statement {
     actions = ["sts:AssumeRole"]
 
     principals {
       type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
+      identifiers = ["ssm.amazonaws.com"]
     }
   }
 }
 
-resource "aws_iam_role" "role" {
-  name               = "${var.pj}-GitLabRunnerRole"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+resource "aws_iam_role" "gitlab_ssm_automation" {
+  count = var.cloudwatch_enable_schedule ? 1 : 0
 
-  tags = merge(
-    {
-      "Name" = "${var.pj}-GitLabRunnerRole"
-    },
-    var.tags
-  )
+  name               = "${var.pj}-GitLab-SSMautomation"
+  assume_role_policy = data.aws_iam_policy_document.gitlab_ssm_automation_trust.json
 }
 
-data "aws_iam_policy" "systems_manager" {
-  arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# SSM Automation用のIAM RoleにPolicy付与
+resource "aws_iam_role_policy_attachment" "ssm-automation-atach-policy" {
+  count = var.cloudwatch_enable_schedule ? 1 : 0
+
+  role       = aws_iam_role.gitlab_ssm_automation.0.id
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
 }
 
-data "aws_iam_policy" "access_ecr" {
-  arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
-}
+# CloudWatchイベント用のIAM Role
+data "aws_iam_policy_document" "event_invoke_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
 
-resource "aws_iam_policy" "s3objectput" {
-  name        = "${var.pj}-s3objectput"
-  path        = "/"
-  description = "s3にオブジェクトをPUTする"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
     }
-  ]
-}
-EOF
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "systems_manager" {
-  role       = aws_iam_role.role.name
-  policy_arn = data.aws_iam_policy.systems_manager.arn
-}
+resource "aws_iam_role" "event_invoke_assume_role" {
+  count = var.cloudwatch_enable_schedule ? 1 : 0
 
-resource "aws_iam_role_policy_attachment" "access_ecr" {
-  role       = aws_iam_role.role.name
-  policy_arn = data.aws_iam_policy.access_ecr.arn
-}
-
-resource "aws_iam_role_policy_attachment" "s3objectput" {
-  role       = aws_iam_role.role.name
-  policy_arn = aws_iam_policy.s3objectput.arn
-}
-
-resource "aws_iam_instance_profile" "gitlab_runner" {
-  name = "${var.pj}-gitlab-runner-instance-profile"
-  role = aws_iam_role.role.name
+  name               = "${var.pj}-GitLab-CloudWatchEventRole"
+  assume_role_policy = data.aws_iam_policy_document.event_invoke_assume_role.json
 }

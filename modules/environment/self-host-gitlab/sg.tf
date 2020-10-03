@@ -10,10 +10,16 @@ resource "aws_security_group" "gitlab" {
     var.tags
   )
 
-  # インバウンドは設定しない
-  # ingress {
-
-  # }
+  dynamic ingress {
+    for_each = var.sg_ingresses
+    content {
+      description = ingress.value["description"]
+      from_port   = ingress.value["port"]
+      to_port     = ingress.value["port"]
+      protocol    = ingress.value["protocol"]
+      cidr_blocks = ingress.value["cidr_blocks"]
+    }
+  }
 
   egress {
     description = "Allow any outbound"
