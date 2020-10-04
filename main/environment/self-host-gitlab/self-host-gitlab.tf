@@ -5,19 +5,51 @@ terraform {
 provider "aws" {
   version = ">= 3.5.0"
   # region  = "ap-northeast-1"
-  region  = "us-east-2"
+  region = "us-east-2"
 }
 
-# common parameter settings
+# parameter settings
 locals {
-  pj            = "ecs-cicd"
-  vpc_id        = "vpc-0ee6b3d1bee520caf"
-  subnet_id     = "subnet-0ca338e6f1171bc23"
-
-  tags = {
-    pj     = "ecs-cicd"
+  pj     = "ecs-cicd-test"
+  # vpc_id = "vpc-0eu6b3d5bee521cat"
+  vpc_id = "vpc-0c0dbf3e964c38796"
+  tags   = {
+    pj     = "ecs-cicd-test"
     ownner = "nobody"
   }
+
+  # ec2_subnet_id              = "subnet-0ya368e6f1271bb23"
+  ec2_subnet_id              = "subnet-0e2bbedf4151a5e58"
+  ec2_instance_type          = "t2.medium"
+  ec2_root_block_volume_size = 30
+  ec2_key_name               = ""
+
+  sg_ingresses = [
+    {
+      port        = 80
+      protocol    = "tcp"
+      # cidr_blocks = ["192.0.2.10/32"]
+      cidr_blocks = ["192.0.2.10/32"]
+      description = "http work pc"
+    },
+    {
+      port        = 22
+      protocol    = "tcp"
+      # cidr_blocks = ["192.0.2.10/32"]
+      cidr_blocks = ["192.0.2.10/32"]
+      description = "ssh work pc"
+    }
+  ]
+
+  ## 自動スケジュール
+  cloudwatch_enable_schedule = false
+  cloudwatch_start_schedule  = "cron(0 0 ? * MON-FRI *)"
+  cloudwatch_stop_schedule   = "cron(0 10 ? * MON-FRI *)"
+
+  ## 自動スナップショット
+  dlm_enable_snapshot = false
+  dlm_snaphost_time   = "15:00"
+  dlm_snaphost_count  = 1
 }
 
 module "gitlab" {
@@ -29,31 +61,18 @@ module "gitlab" {
   vpc_id = local.vpc_id
 
   # module parameter
-  ec2_instance_type          = "t2.medium"
-  ec2_subnet_id              = local.subnet_id
-  ec2_root_block_volume_size = "30"
-  ec2_key_name               = "mori"
+  ec2_instance_type          = local.ec2_instance_type
+  ec2_subnet_id              = local.ec2_subnet_id
+  ec2_root_block_volume_size = local.ec2_root_block_volume_size
+  ec2_key_name               = local.ec2_key_name
 
-  sg_ingresses = [
-    {
-      port        = 80
-      protocol    = "tcp"
-      cidr_blocks = ["106.133.21.37/32"]
-      description = "http mori pc"
-    },
-    {
-      port        = 22
-      protocol    = "tcp"
-      cidr_blocks = ["106.133.21.37/32"]
-      description = "ssh mori pc"
-    }
-  ]
+  sg_ingresses = local.sg_ingresses
 
-  cloudwatch_enable_schedule = true
-  cloudwatch_start_schedule  = "cron(0 0 ? * MON-FRI *)"
-  cloudwatch_stop_schedule   = "cron(0 10 ? * MON-FRI *)"
+  cloudwatch_enable_schedule = local.cloudwatch_enable_schedule
+  cloudwatch_start_schedule  = local.cloudwatch_start_schedule
+  cloudwatch_stop_schedule   = local.cloudwatch_stop_schedule
 
-  dlm_enable_snapshot = true
-  dlm_snaphost_time   = "15:00"
-  dlm_snaphost_count  = 1
+  dlm_enable_snapshot = local.dlm_enable_snapshot
+  dlm_snaphost_time   = local.dlm_snaphost_time
+  dlm_snaphost_count  = local.dlm_snaphost_count
 }

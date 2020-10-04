@@ -28,7 +28,7 @@ data "aws_caller_identity" "self" { }
 data "aws_region" "current" {}
 
 module "alb" {
-  source = "../../../modules/service/deploy/alb"
+  source = "../../../modules/service/service-deploy/alb"
 
   # common parameter
   app_full = local.app_full
@@ -40,7 +40,7 @@ module "alb" {
 }
 
 module "service" {
-  source = "../../../modules/service/deploy/ecs-service-fargate"
+  source = "../../../modules/service/service-deploy/ecs-service-fargate"
 
   # common parameter
   pj       = local.pj
@@ -78,7 +78,7 @@ module "service" {
 }
 
 module "deploy-pipeline" {
-  source = "../../../modules/service/deploy/deploy-pipeline"
+  source = "../../../modules/service/service-deploy/deploy-pipeline"
 
   # common parameter
   # name     = local.pj

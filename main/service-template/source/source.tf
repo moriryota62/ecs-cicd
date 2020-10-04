@@ -21,7 +21,7 @@ locals {
 }
 
 module "ecr" {
-  source = "../../../modules/service/prepare/ecr"
+  source = "../../../modules/service/source/ecr"
 
   # common parameter
   tags   = local.tags
@@ -31,7 +31,7 @@ module "ecr" {
 }
 
 module "s3" {
-  source = "../../../modules/service/prepare/s3"
+  source = "../../../modules/service/source/s3"
 
   # common parameter
   tags   = local.tags
