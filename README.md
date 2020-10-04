@@ -123,8 +123,8 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 
 - グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Set up a group Runner manually`の2のURLと3のトークンを確認します。たとえば以下のような値となっているはずです
 
-  1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
-  2. 972hz6YiJTWUcN4ECUNk
+1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
+2. 972hz6YiJTWUcN4ECUNk
 
 ### GitLab Runner
 
