@@ -101,28 +101,30 @@ terraform apply
 > yes
 ```
 
-GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックDNS名を入力してください。
+terraform実行後、以下の通りGitLabサーバにアクセスしてGitLabサーバの準備をしてください。
 
-初回アクセスの場合、rootのパスワード変更を求められるため、パスワードを設定してください。
+- GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックDNS名を入力してください
 
-rootのパスワードを入力するとログイン画面が表示されます。先ほど設定したパスワードでrootにログインします。
+- 初回アクセスの場合、rootのパスワード変更を求められるため、パスワードを設定してください
 
-上部メニューバーの[Admin Area（スパナマーク）]を選択します。
+- rootのパスワードを入力するとログイン画面が表示されます。先ほど設定したパスワードでrootにログインします
 
-左メニューから[Settings]-[General]-[Visibility and access controls]を開き`Custom Git clone URL for HTTP(S)`にEC2インスタンスのパブリックDNS名を入力して[Save changes]します。（デフォルトではAWSの外部で名前解決できない名前になっているためです。名前解決できる名前ならプラベートDNS名以外の任意のドメイン名でも構いません。）
+- 上部メニューバーの[Admin Area（スパナマーク）]を選択します
 
-左メニューから[Overview]-[Users]を開き`New user`を選択します。任意のユーザを作成してください。（パスワードはユーザ作成後、ユーザの一覧画面でeditすると設定できる。）
+- 左メニューから[Settings]-[General]-[Visibility and access controls]を開き`Custom Git clone URL for HTTP(S)`にEC2インスタンスのパブリックDNS名を入力して[Save changes]します。（デフォルトではAWSの外部で名前解決できない名前になっているためです。名前解決できる名前ならプラベートDNS名以外の任意のドメイン名でも構いません。）
 
-左メニューから[Overview]-[Groups]を開き`New group`を選択します。任意の名前のグループを作成してください。また、上記作成したユーザをグループのownerに設定してください。
+- 左メニューから[Overview]-[Users]を開き`New user`を選択します。任意のユーザを作成してください。（パスワードはユーザ作成後、ユーザの一覧画面でeditすると設定できる。）
 
-一度rootからログアウトし、上記ユーザでログインしなおしてください。
+- 左メニューから[Overview]-[Groups]を開き`New group`を選択します。任意の名前のグループを作成してください。また、上記作成したユーザをグループのownerに設定してください
 
-上部メニューバーの[Groups]-[Your groups]を表示し、先ほど作成したグループを選択します。
+- 一度rootからログアウトし、上記ユーザでログインしなおしてください
 
-グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Set up a group Runner manually`の2のURLと3のトークンを確認します。たとえば以下のような値となっているはずです。
+- 上部メニューバーの[Groups]-[Your groups]を表示し、先ほど作成したグループを選択します
 
-1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
-2. 972hz6YiJTWUcN4ECUNk
+- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Set up a group Runner manually`の2のURLと3のトークンを確認します。たとえば以下のような値となっているはずです
+
+  1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
+  2. 972hz6YiJTWUcN4ECUNk
 
 ### GitLab Runner
 
