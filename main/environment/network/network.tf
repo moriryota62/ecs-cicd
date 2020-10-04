@@ -31,6 +31,6 @@ module "network" {
   # module parameter
   vpc_cidr = local.vpc_cidr
 
-  subnet_public_cidrs  = local.public_cidrs
-  subnet_private_cidrs = local.private_cidrs
+  subnet_public_cidrs  = local.subnet_public_cidrs
+  subnet_private_cidrs = local.subnet_private_cidrs
 }
