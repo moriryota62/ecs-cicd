@@ -4,24 +4,25 @@ terraform {
 
 provider "aws" {
   version = ">= 3.5.0"
-  # region  = "ap-northeast-1"
-  region  = "us-east-2"
+  region  = "ap-northeast-1"
 }
 
 # common parameter settings
 locals {
-  pj         = "ecs-cicd"
-  app        = "example"
+  pj         = "PJ-NAME"
+  app        = "APP-NAME"
   app_full   = "${local.pj}-${local.app}"
-  # vpc_id     = "vpc-b9eabcd1"
-  # subnet_ids = ["subnet-855250cc","subnet-0cd81d4621eda10f2"]
   vpc_id     = "vpc-01ebee9c826125662"
   subnet_ids = ["subnet-0de4a0053b586f886","subnet-0e75046eccbffc93a"]
   tags     = {
-    pj     = "ecs-cicd"
-    app    = "example"
-    ownner = "nobody"
+    pj     = "PJ-NAME"
+    app    = "APP-NAME"
+    ownner = "NOBODY"
   }
+
+  lb_trafic_port       = 80
+  lb_traffic_protocol  = "HTTP"
+  lb_health_check_path = "/"
 }
 
 data "aws_caller_identity" "self" { }
@@ -53,7 +54,7 @@ module "service" {
   ## task definition
   task_execution_role_arn = "arn:aws:iam::${data.aws_caller_identity.self.account_id}:role/${local.pj}-EcsTaskExecuteRole"
 
-  ## service
+  ## service (dummy)
   service_name              = "${local.app_full}-service"
   service_cluster_arn       = "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.self.account_id}:cluster/${local.pj}-cluster"
   service_desired_count     = 1
@@ -64,11 +65,11 @@ module "service" {
 
   ## ELB Listener & targetgroup
   elb_arn                       = module.alb.alb_arn
-  elb_prod_traffic_port         = 80
-  elb_prod_traffic_protocol     = "HTTP"
-  elb_backend_port              = 80
-  elb_backend_protocol          = "HTTP"
-  elb_backend_health_check_path = "/"
+  elb_prod_traffic_port         = local.lb_trafic_port
+  elb_prod_traffic_protocol     = local.lb_traffic_protocol
+  elb_backend_port              = local.lb_trafic_port
+  elb_backend_protocol          = local.lb_traffic_protocol
+  elb_backend_health_check_path = local.lb_health_check_path
 
   ## CloudWatch Logs
   clowdwatch_log_groups = ["/${local.pj}-cluster/${local.app_full}-service"]

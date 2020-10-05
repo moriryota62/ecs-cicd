@@ -4,21 +4,18 @@ terraform {
 
 provider "aws" {
   version = ">= 3.5.0"
-  # region  = "ap-northeast-1"
-  region = "us-east-2"
+  region  = "ap-northeast-1"
 }
 
 # parameter settings
 locals {
-  pj     = "ecs-cicd-test"
-  # vpc_id = "vpc-0eu6b3d5bee521cat"
+  pj     = "PJ-NAME"
   vpc_id = "vpc-0c0dbf3e964c38796"
   tags   = {
-    pj     = "ecs-cicd-test"
-    ownner = "nobody"
+    pj     = "PJ-NAME"
+    ownner = "NOBODY"
   }
 
-  # ec2_subnet_id              = "subnet-0ya368e6f1271bb23"
   ec2_subnet_id              = "subnet-0e2bbedf4151a5e58"
   ec2_instance_type          = "t2.medium"
   ec2_root_block_volume_size = 30
@@ -28,14 +25,12 @@ locals {
     {
       port        = 80
       protocol    = "tcp"
-      # cidr_blocks = ["192.0.2.10/32"]
       cidr_blocks = ["192.0.2.10/32"]
       description = "http work pc"
     },
     {
       port        = 22
       protocol    = "tcp"
-      # cidr_blocks = ["192.0.2.10/32"]
       cidr_blocks = ["192.0.2.10/32"]
       description = "ssh work pc"
     }

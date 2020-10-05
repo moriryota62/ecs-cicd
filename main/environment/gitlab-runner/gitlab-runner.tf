@@ -4,17 +4,16 @@ terraform {
 
 provider "aws" {
   version = ">= 3.5.0"
-  # region  = "ap-northeast-1"
-  region = "us-east-2"
+  region  = "ap-northeast-1"
 }
 
 # cparameter settings
 locals {
-  pj     = "ecs-cicd-test"
+  pj     = "PJ-NAME"
   vpc_id = "vpc-01ebee9c826125662"
   tags = {
-    pj     = "ecs-cicd-test"
-    ownner = "nobody"
+    pj     = "PJ-NAME"
+    ownner = "NOBODY"
   }
 
   ec2_gitlab_url             = "https://gitlab.com"

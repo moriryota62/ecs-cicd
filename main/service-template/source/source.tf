@@ -4,19 +4,18 @@ terraform {
 
 provider "aws" {
   version = ">= 3.5.0"
-  # region  = "ap-northeast-1"
-  region  = "us-east-2"
+  region  = "ap-northeast-1"
 }
 
 # common parameter settings
 locals {
-  pj       = "ecs-cicd"
-  app      = "example"
+  pj       = "PJ-NAME"
+  app      = "APP-NAME"
   app_full = "${local.pj}-${local.app}"
   tags     = {
-    pj     = "ecs-cicd"
-    app    = "example"
-    ownner = "nobody"
+    pj     = "PJ-NAME"
+    app    = "APP-NAME"
+    ownner = "NOBODY"
   }
 }
 

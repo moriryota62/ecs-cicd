@@ -1,3 +1,10 @@
+# レポジトリの説明
+
+GitLab + ECS CICDパイプラインを構築するTerraformモジュール群とそのセットアップ方法を格納したレポジトリです。GitLabに作成するレポジトリのサンプルも格納しています。本レポジトリで作成するCICDの全体像は以下の通りです。
+
+AWS構成図
+
+CICDフロー図
 
 # モジュールの説明
 
@@ -62,6 +69,25 @@ git clone https://github.com/moriryota62/ecs-cicd.git
 ```
 
 ## 環境構築
+
+環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。その場合は`main`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
+
+
+``` sh
+cd $CLONEDIR/ecs-cicd/
+cp -r main cicd-dev
+```
+
+また、すべてのモジュールで共通して設定する`pj`と`region`の値はsedで置換しておくと後の手順が楽です。
+
+**macの場合**
+
+``` sh
+cd cicd-dev
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+```
+
 
 ### ネットワーク
 
@@ -137,11 +163,44 @@ cd $CLONEDIR/ecs-cicd/main/environment/gitlab-runner
 
 ### ECSクラスタ
 
+ECSクラスタモジュールのディレクトリへ移動します。
+
+``` sh
+cd $CLONEDIR/ecs-cicd/main/environment/ecs-cluster
+```
+
+`ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
+
+修正したら以下コマンドでモジュールを作成します。
+
+``` sh
+terraform apply
+> yes
+```
 
 ## サービス構築
 
+サービスの構築はサービスごとに行います。terraformのコードもサービスごとに作成するため、あらかじめ用意された`service-template`ディレクトリをコピーし、`サービス名`ディレクトリなどの作成がオススメです。以下の手順では`test-app`というサービス名を想定して記載します。
+
+``` sh
+cd $CLONEDIR/ecs-cicd/main/
+cp -r service-template test-app
+```
+
+また、すべてのモジュールで共通して設定する`pj`と`app`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
+
+**macの場合**
+
+``` sh
+cd test-app
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+```
+
 
 ### ソース
+
+ソースモジュールのディレクトリへ移動します。
 
 
 ### GitLab CICDによるソース配置
