@@ -13,7 +13,7 @@ locals {
   vpc_id = "vpc-01ebee9c826125662"
   tags = {
     pj     = "PJ-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 
   ec2_gitlab_url             = "https://gitlab.com"

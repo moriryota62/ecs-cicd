@@ -17,7 +17,7 @@ locals {
   tags     = {
     pj     = "PJ-NAME"
     app    = "APP-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 
   lb_trafic_port       = 80

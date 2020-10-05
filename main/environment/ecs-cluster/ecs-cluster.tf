@@ -12,7 +12,7 @@ locals {
   pj   = "PJ-NAME"
   tags = {
     pj     = "PJ-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 }
 

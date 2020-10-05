@@ -13,7 +13,7 @@ locals {
   vpc_cidr = "10.1.0.0/16"
   tags = {
     pj     = "PJ-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 
   subnet_public_cidrs  = ["10.1.10.0/24", "10.1.11.0/24"]

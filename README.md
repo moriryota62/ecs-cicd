@@ -72,20 +72,20 @@ git clone https://github.com/moriryota62/ecs-cicd.git
 
 環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。その場合は`main`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
 
-
 ``` sh
 cd $CLONEDIR/ecs-cicd/
 cp -r main cicd-dev
 ```
 
-また、すべてのモジュールで共通して設定する`pj`と`region`の値はsedで置換しておくと後の手順が楽です。
+また、すべてのモジュールで共通して設定する`pj`、`region`、`owner`の値はsedで置換しておくと後の手順が楽です。regionはデフォルトでは'ap-northeast-1'を指定しています。変える必要がなければsedする必要ありません。
 
 **macの場合**
 
 ``` sh
 cd cicd-dev
+find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-northeast-1:us-east-2:g'
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
-find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
 ```
 
 

@@ -15,7 +15,7 @@ locals {
   tags     = {
     pj     = "PJ-NAME"
     app    = "APP-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 }
 

@@ -13,7 +13,7 @@ locals {
   vpc_id = "vpc-0c0dbf3e964c38796"
   tags   = {
     pj     = "PJ-NAME"
-    ownner = "NOBODY"
+    owner = "OWNER"
   }
 
   ec2_subnet_id              = "subnet-0e2bbedf4151a5e58"
