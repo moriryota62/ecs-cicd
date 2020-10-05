@@ -70,11 +70,12 @@ git clone https://github.com/moriryota62/ecs-cicd.git
 
 ## 環境構築
 
-環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。その場合は`main`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
+環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。`main`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
 
 ``` sh
 cd $CLONEDIR/ecs-cicd/
 cp -r main cicd-dev
+export PJNAME=cicd-dev
 ```
 
 また、すべてのモジュールで共通して設定する`pj`、`region`、`owner`の値はsedで置換しておくと後の手順が楽です。regionはデフォルトでは'ap-northeast-1'を指定しています。変える必要がなければsedする必要ありません。
@@ -82,7 +83,7 @@ cp -r main cicd-dev
 **macの場合**
 
 ``` sh
-cd cicd-dev
+cd $PJNAME
 find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-northeast-1:us-east-2:g'
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
 find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
@@ -96,7 +97,7 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody
 ネットワークモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/main/environment/network
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
 ```
 
 `network.tf`を編集します。`region`と`locals`配下のパラメータを修正します。`region`と`pj`は他すべてのモジュールでも同じ値を設定するようにしましょう。あらかじめ全置換しても良いかもしれません。
@@ -115,7 +116,7 @@ terraform apply
 GitLabサーバモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/main/environment/self-host-gitlab
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
 ```
 
 `self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。
@@ -157,7 +158,7 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 GitLab Runnerサーバモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/main/environment/gitlab-runner
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
 ```
 
 
@@ -166,7 +167,7 @@ cd $CLONEDIR/ecs-cicd/main/environment/gitlab-runner
 ECSクラスタモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/main/environment/ecs-cluster
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
 ```
 
 `ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
@@ -183,7 +184,7 @@ terraform apply
 サービスの構築はサービスごとに行います。terraformのコードもサービスごとに作成するため、あらかじめ用意された`service-template`ディレクトリをコピーし、`サービス名`ディレクトリなどの作成がオススメです。以下の手順では`test-app`というサービス名を想定して記載します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/main/
+cd $CLONEDIR/ecs-cicd/$PJNAME/
 cp -r service-template test-app
 ```
 
@@ -193,10 +194,8 @@ cp -r service-template test-app
 
 ``` sh
 cd test-app
-find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
 find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
 ```
-
 
 ### ソース
 
