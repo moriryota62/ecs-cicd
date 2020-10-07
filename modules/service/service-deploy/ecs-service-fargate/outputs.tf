@@ -13,3 +13,7 @@ output "blue_target_group_name" {
 output "green_target_group_name" {
   value = aws_lb_target_group.this["${var.app_full}-green"].name
 }
+
+output "sg_id" {
+  value = aws_security_group.service.id
+}

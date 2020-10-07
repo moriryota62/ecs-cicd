@@ -5,6 +5,11 @@ Resources:
       Properties:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "ecs-cicd-example-task"
+          ContainerName: "cicd-dev-test-app-task"
           ContainerPort: 80
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            Subnets: ["subnet-05c23eddae6e9d4b7","subnet-0220b737826140af3"]
+            SecurityGroups: ["sg-0a1eebdbe0ce8c117"]
+            AssignPublicIp: "DISABLED"
 version: 0.0

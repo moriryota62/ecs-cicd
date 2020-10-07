@@ -1,8 +1,11 @@
-resource "aws_subnet" "public" {
-  for_each = toset(var.subnet_public_cidrs)
+data "aws_availability_zones" "available" {}
 
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.key
+resource "aws_subnet" "public" {
+  count = length(var.subnet_public_cidrs)
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.subnet_public_cidrs[count.index]
+  availability_zone = data.aws_availability_zones.available.names[ count.index + 1]
 
   tags = merge(
     {
@@ -13,10 +16,11 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  for_each = toset(var.subnet_private_cidrs)
+  count = length(var.subnet_private_cidrs)
 
   vpc_id     = aws_vpc.main.id
-  cidr_block = each.key
+  cidr_block = var.subnet_private_cidrs[count.index]
+  availability_zone = data.aws_availability_zones.available.names[ count.index + 1]
 
   tags = merge(
     {

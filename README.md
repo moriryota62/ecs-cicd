@@ -1,3 +1,7 @@
+# 各種バージョン
+terraform 0.13.2 以上
+aws providor 3.5.0以上
+
 # レポジトリの説明
 
 GitLab + ECS CICDパイプラインを構築するTerraformモジュール群とそのセットアップ方法を格納したレポジトリです。GitLabに作成するレポジトリのサンプルも格納しています。本レポジトリで作成するCICDの全体像は以下の通りです。
@@ -12,7 +16,7 @@ CICDフロー図
 
 各モジュールは`main`と`module`のディレクトリに別れて構成されます。`main`は各モジュールのパラメータを指定する`{モジュール名}.tf`という名前のtfファイルを格納しています。基本的に利用者はこのmain配下のtfファイル内にあるlocalsの値のみ修正し実行します。`module`は各モジュールが実行するサブモジュール群です。基本的に利用者はmodule配下を気にする必要はありません。（追加の設定など細かなカスタマイズが必要な方や実装が気になる方は見てください。）
 
-また、各モジュールを実行した後に作成されるtfstateはとくにリモートへ保存する設定をしておらず、実行時のカレントディレクトリに保存されます。必要に応じてリモートへの保存やロックの仕組みを実装してください。
+また、各モジュールを実行した後に作成されるtfstateはとくにリモートへ保存する設定をしておらず、実行時のカレントディレクトリに保存されます。`.gitignore`を記述しているため、リポジトリにはアップされません。必要に応じてリモートへの保存やロックの仕組みを実装してください。
 
 ## 環境構築モジュールの説明
 
@@ -74,8 +78,8 @@ git clone https://github.com/moriryota62/ecs-cicd.git
 
 ``` sh
 cd $CLONEDIR/ecs-cicd/
-cp -r main cicd-dev
 export PJNAME=cicd-dev
+cp -r main $PJNAME
 ```
 
 また、すべてのモジュールで共通して設定する`pj`、`region`、`owner`の値はsedで置換しておくと後の手順が楽です。regionはデフォルトでは'ap-northeast-1'を指定しています。変える必要がなければsedする必要ありません。
@@ -88,7 +92,6 @@ find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
 find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
 ```
-
 
 ### ネットワーク
 
@@ -105,9 +108,12 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
 修正したら以下コマンドでモジュールを作成します。
 
 ``` sh
+terraform init
 terraform apply
 > yes
 ```
+
+実行後に出力される`vpc_id`や`public_subent_ids`などは後続のモジュールで使用します。どこかに内容を控えておくと良いでしょう。
 
 ### GitLabサーバ
 
@@ -124,6 +130,7 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
 修正したら以下コマンドでモジュールを作成します。
 
 ``` sh
+terraform init
 terraform apply
 > yes
 ```
@@ -161,6 +168,21 @@ GitLab Runnerサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
 ```
 
+`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。(SaaS版GitLabの場合、urlは`https://gitlab.com`になります。)
+
+修正したら以下コマンドでモジュールを作成します。
+
+``` sh
+terraform init
+terraform apply
+> yes
+```
+
+上記実行が完了したらGitLab側にRunnerが認識されているか確認します。
+
+- グループに所存したユーザでGitLabにログインしてください
+
+- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Available Runners`に作成したRunnerが表示されていれば登録完了です
 
 ### ECSクラスタ
 
@@ -175,6 +197,7 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
 修正したら以下コマンドでモジュールを作成します。
 
 ``` sh
+terraform init
 terraform apply
 > yes
 ```
@@ -185,7 +208,8 @@ terraform apply
 
 ``` sh
 cd $CLONEDIR/ecs-cicd/$PJNAME/
-cp -r service-template test-app
+export APPNAME=test-app
+cp -r service-template $APPNAME
 ```
 
 また、すべてのモジュールで共通して設定する`pj`と`app`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
@@ -193,7 +217,7 @@ cp -r service-template test-app
 **macの場合**
 
 ``` sh
-cd test-app
+cd $APPNAME
 find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
 ```
 
@@ -201,8 +225,71 @@ find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:
 
 ソースモジュールのディレクトリへ移動します。
 
+``` sh
+cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/source
+```
+
+`source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
+
+修正したら以下コマンドでモジュールを作成します。
+
+``` sh
+terraform init
+terraform apply
+> yes
+```
 
 ### GitLab CICDによるソース配置
 
+これはterraformを実行する手順ではありません。GitLabで実施する手順になります。現在AWS側にはアプリケーションのコンテナイメージとECSのデプロイ設定を配置する場所が用意できています。例で作成した`cicd-dev`プロジェクトの`test-app`アプリケーションの場合、それぞれ以下の通りです。
+
+|対象データ|配置サービス|配置場所|
+|-|-|-|
+|アプリケーションのコンテナイメージ|ECR|`cicd-dev-test-app`レポジトリ|
+|ECSのデプロイ設定|S3|`cicd-dev-test-app`バケット|
+
+上記配置場所に対象データを格納しないとこの後に実行する`サービスデプロイ`モジュールが上手く動きません。GitLab CICDを動かすための環境も準備できているため、GitLab CICDによりGitLabのレポジトリにプッシュすれば自動で配置場所に対象データを格納できるようにしましょう。サンプルとなるレポジトリを`sample-repos`ディレクトリ配下に用意しています。これらのサンプルを参考に以下の様にGitLab側の設定を行います。
+
+- グループに所存したユーザでGitLabにログインしてください
+
+- `new project`で新しくプロジェクト（レポジトリ）を作成します。サンプルの例だと`app`と`ecs`という名前の2つのレポジトリを作成します
+
+- `app`レポジトリにはアプリケーションのソースとDockerfileを配置します。また、レポジトリのルートに`.gitlab-ci.yml`を配置します。サンプルだとファイル名の頭に`.`を入れていないためリネームしてください。この`.gitlab-ci.yml`はGitLab CICDのパイプライン設定になります。このファイルに記述した内容をGitLab Runnerサーバで実行します。サンプル内のvariables配下の`ECR_HOST`と`APP_NAME`を修正してください。また、`tags`で指定した値はどのGitLab Runnerを使用するか判別するためのものです。プロジェクト用に作成したGitLab Runnerを指定するためプロジェクト名を指定します
+
+- `ecs`レポジトリにはCodeDeployによるECS Serviceデプロイをするための設定ファイルを配置します。`app`レポジトリ同様、レポジトリのルートに`.gitlab-ci.yml`を配置し、対象runnerのタグをプロジェクト名にします。variablesの`BACKET`も修正してください。また、`appspec.yaml`と`taskdef.json`の中にもアプリケーション名（cicd-dev-test-app）を指定している箇所があるため自身のアプリケーション名に修正してください
+
+- `.gitlab-ci.yml`があるレポジトリをmasterにプッシュするとGitLab CICDによりパイプラインが実行されます。`app`レポジトリでは「docker build」を行い指定したECRへプッシュします。`ecs`レポジトリでは設定ファイル群をzipファイルに圧縮し指定したS3バケットへcpします。パイプラインの実行状態は各レポジトリの左メニュー[CICD]-[パイプライン]で状況を確認できます
+
+- 上手く実行できればECRおよびS3にデータが格納でてきるはずなので確認してください
 
 ### サービスデプロイ
+
+サービスデプロイモジュールのディレクトリへ移動します。
+
+``` sh
+cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
+```
+
+`source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_idは自身の環境に合わせて修正してください。
+
+修正したら以下コマンドでモジュールを作成します。
+
+``` sh
+terraform init
+terraform apply
+> yes
+```
+
+実行後に出力される`dns_name`はLBのDNS名です。コピーしてWEBブラウザでアクセスします。すべて上手く行けば以下のようなメッセージの画面が表示されます。なお、デプロイはterraform完了からさらに数分の時間を要します。デプロイ失敗なのか待ちなのか確認するには、マネジメントコンソールでcodepipelineの画面を開き現在の状況を追ってみるとよいでしょう。Deployが進行中であればまだしばらく待ったください。
+
+## 環境削除
+
+構築したときの逆の以下モジュール順に`terraform destroy`を実行してください。
+
+1. サービスデプロイ
+2. ソース
+3. ECSクラスタ
+4. GitLab Runner
+5. GitLabサーバ
+6. ネットワーク
+

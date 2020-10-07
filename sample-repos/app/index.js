@@ -9,8 +9,8 @@ const server = http.createServer((req, res) => {
     <!DOCTYPE html>
         <html lang="ja">
             <body>
-                <h1>2020 09 24 17:00</h1>
-                <h1> ${env.taskdefver} </h1>
+                <h1>これは GitLab CICD と CodePipeline & Deploy によるCICDでデプロイされたアプリケーション</h1>
+                <h1> ${env.appname} です。</h1>
             </body>
     </html>`);
     res.end();
