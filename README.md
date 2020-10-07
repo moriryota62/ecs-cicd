@@ -248,7 +248,17 @@ terraform apply
 |アプリケーションのコンテナイメージ|ECR|`cicd-dev-test-app`レポジトリ|
 |ECSのデプロイ設定|S3|`cicd-dev-test-app`バケット|
 
-上記配置場所に対象データを格納しないとこの後に実行する`サービスデプロイ`モジュールが上手く動きません。GitLab CICDを動かすための環境も準備できているため、GitLab CICDによりGitLabのレポジトリにプッシュすれば自動で配置場所に対象データを格納できるようにしましょう。サンプルとなるレポジトリを`sample-repos`ディレクトリ配下に用意しています。これらのサンプルを参考に以下の様にGitLab側の設定を行います。
+上記配置場所に対象データを格納しないとこの後に実行する`サービスデプロイ`モジュールが上手く動きません。GitLab CICDを動かすための環境も準備できているため、GitLab CICDによりGitLabのレポジトリにプッシュすれば自動で配置場所に対象データを格納できるようにしましょう。サンプルとなるレポジトリを`sample-repos`ディレクトリ配下に用意しています。これらのサンプルを参考に以下の様にGitLab側の設定を行います。なお、サンプルディレクトリ配下のファイルを使う場合、以下のように置換を行ってください。
+
+``` sh
+cd $CLONEDIR/ecs-cicd/
+find ./ -type f -exec grep -l 'AWSID' {} \; | xargs sed -i "" -e 's:AWSID:<自身が使用しているAWSアカウントのID>:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:<Service用に作成したSGのID>:g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:<プライベートサブネットのID>:g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:<プライベートサブネットのID>:g'
+```
 
 - グループに所存したユーザでGitLabにログインしてください
 

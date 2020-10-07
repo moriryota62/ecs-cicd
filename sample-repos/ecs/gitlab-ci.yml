@@ -16,7 +16,7 @@ zip-build:
   only:
     - master
   tags:
-    - cicd-dev
+    - PJ-NAME
 
 s3-deploy:
   image: 
@@ -24,10 +24,10 @@ s3-deploy:
     entrypoint: [""]
   stage: deploy
   variables:
-    BACKET: cicd-dev-test-app
+    BACKET: APP-NAME
   script:
     - aws s3 cp ./settings.zip s3://${BACKET}
   only:
     - master
   tags:
-    - cicd-dev
+    - PJ-NAME
