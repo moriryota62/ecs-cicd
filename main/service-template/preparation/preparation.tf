@@ -12,6 +12,7 @@ locals {
   pj       = "PJ-NAME"
   app      = "APP-NAME"
   app_full = "${local.pj}-${local.app}"
+  vpc_id   = "VPC-ID"
   tags     = {
     pj     = "PJ-NAME"
     app    = "APP-NAME"
@@ -19,22 +20,17 @@ locals {
   }
 }
 
-module "ecr" {
-  source = "../../../modules/service/source/ecr"
+module "preparation" {
+  source = "../../../modules/service/preparation"
 
   # common parameter
   tags   = local.tags
+  vpc_id = local.vpc_id
 
   # module parameter
   ecr_repositories = [local.app_full]
-}
 
-module "s3" {
-  source = "../../../modules/service/source/s3"
-
-  # common parameter
-  tags   = local.tags
-
-  # module parameter
   s3_service_settings_bucket_name = local.app_full
+
+  sg_name   = local.app_full
 }

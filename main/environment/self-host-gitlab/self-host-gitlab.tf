@@ -10,13 +10,13 @@ provider "aws" {
 # parameter settings
 locals {
   pj     = "PJ-NAME"
-  vpc_id = "vpc-0c0dbf3e964c38796"
+  vpc_id = "VPC-ID"
   tags   = {
     pj     = "PJ-NAME"
     owner = "OWNER"
   }
 
-  ec2_subnet_id              = "subnet-0e2bbedf4151a5e58"
+  ec2_subnet_id              = "PUBLIC-SUBNET-1"
   ec2_instance_type          = "t2.medium"
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""

@@ -10,18 +10,19 @@ provider "aws" {
 # cparameter settings
 locals {
   pj     = "PJ-NAME"
-  vpc_id = "vpc-01ebee9c826125662"
+  vpc_id = "VPC-ID"
   tags = {
     pj     = "PJ-NAME"
     owner = "OWNER"
   }
 
-  ec2_gitlab_url             = "https://gitlab.com"
-  ec2_registration_token     = "d47-uL1UhRyiC5X-VFuB"
-  ec2_subnet                 = "subnet-0de4a0053b586f886"
+  ec2_gitlab_url             = "GITLAB-URL"
+  ec2_registration_token     = "REGIST-TOKEN"
+  ec2_subnet                 = "PUBLIC-SUBNET-1"
   ec2_instance_type          = "t2.micro"
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""
+  ec2_sg_id                  = "RUNNER-SG-ID"
 }
 
 module "gitlab-ecs-cicd-gitlab-runner" {
@@ -41,4 +42,5 @@ module "gitlab-ecs-cicd-gitlab-runner" {
   ec2_subnet_id              = local.ec2_subnet
   ec2_root_block_volume_size = local.ec2_root_block_volume_size
   ec2_key_name               = local.ec2_key_name
+  ec2_sg_id                  = local.ec2_sg_id
 }

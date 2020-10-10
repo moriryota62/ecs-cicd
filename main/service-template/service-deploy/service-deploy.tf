@@ -12,8 +12,10 @@ locals {
   pj         = "PJ-NAME"
   app        = "APP-NAME"
   app_full   = "${local.pj}-${local.app}"
-  vpc_id     = "vpc-01ebee9c826125662"
-  subnet_ids = ["subnet-0de4a0053b586f886","subnet-0e75046eccbffc93a"]
+  vpc_id     = "VPC-ID"
+  public_subnet_ids  = ["PUBLIC-SUBNET-1","PUBLIC-SUBNET-2"]
+  private_subnet_ids = ["PRIVATE-SUBNET-1","PRIVATE-SUBNET-2"]
+  service_sg_id = "SERVICESGID"
   tags     = {
     pj     = "PJ-NAME"
     app    = "APP-NAME"
@@ -37,7 +39,8 @@ module "alb" {
   tags     = local.tags
 
   # module parameter
-  lb_subnet_ids = local.subnet_ids
+  lb_subnet_ids = local.public_subnet_ids
+  lb_service_sg_id = local.service_sg_id
 }
 
 module "service" {
@@ -59,7 +62,7 @@ module "service" {
   service_cluster_arn       = "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.self.account_id}:cluster/${local.pj}-cluster"
   service_desired_count     = 1
   service_allow_inbound_sgs = [module.alb.alb_sg_id]
-  service_subnets           = local.subnet_ids
+  service_subnets           = local.private_subnet_ids
   service_container_name    = "dummy"
   service_container_port    = 80
 

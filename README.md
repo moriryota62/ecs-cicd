@@ -29,7 +29,7 @@ CICDフロー図
 
 `ネットワーク`はVPCとパブリックサブネットおよびプライベートサブネットを構築するterraformモジュールです。インターネットゲートウェイやNATゲートウェイも構築します。このモジュールで作成した`VPCのID`や`サブネットのID`は他のモジュールでも使用します。このモジュールはVPCがない場合などに実行ください。すでにVPCやサブネットがある場合はそれならのIDを他モジュールで使用してください。
 
-`GitLabサーバ`はセルフホストのGitLabサーバを構築するモジュールです。任意のEC2タイプで構築できます。AMIは指定可能ですが、デフォルトではGitLabより公開されている最新のGitLab CE AMIを使用します。使用にはあらかじめAMIをサブスクライブする必要があります。GitLabサーバにはEIPを付与します。また、以下の追加機能を任意で設定できます。追加機能はデフォルトでは`無効`にしています。このモジュールを実行せす、インターネットのSaaS版GitLabを使用しても良いです。その場合、SaaS版GitLabでグループ作成やRunnerトークンの確認を行ってください。
+`GitLabサーバ`はセルフホストのGitLabサーバを構築するモジュールです。任意のEC2タイプで構築できます。AMIは指定可能ですが、デフォルトではGitLabより公開されている最新のGitLab CE AMIを使用します。使用にはあらかじめAMIをサブスクライブする必要があります。GitLabサーバにはIPアドレス固定化のためEIPを付与します。また、以下の追加機能を任意で設定できます。追加機能はデフォルトでは`無効`にしています。このモジュールを実行せす、インターネットのSaaS版GitLabを使用しても良いです。その場合、SaaS版GitLabでグループ作成やRunnerトークンの確認を行ってください。
 
 |機能|説明|
 |-|-|
@@ -89,7 +89,7 @@ cp -r main $PJNAME
 ``` sh
 cd $PJNAME
 find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-northeast-1:us-east-2:g'
-find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
 find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
 ```
 
@@ -103,7 +103,7 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody
 cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
 ```
 
-`network.tf`を編集します。`region`と`locals`配下のパラメータを修正します。`region`と`pj`は他すべてのモジュールでも同じ値を設定するようにしましょう。あらかじめ全置換しても良いかもしれません。
+`network.tf`を編集します。`region`と`locals`配下のパラメータを修正します。VPCやサブネットのCIDRは自身の環境にあわせて任意のアドレス帯に修正してください。
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -113,7 +113,15 @@ terraform apply
 > yes
 ```
 
-実行後に出力される`vpc_id`や`public_subent_ids`などは後続のモジュールで使用します。どこかに内容を控えておくと良いでしょう。
+実行後に出力される`vpc_id`や`public_subent_ids`などは後続のモジュールで使用します。内容を控えておくと良いでしょう。
+
+``` sh
+export VPCID=<vpc_id>
+export PUBLICSUBNET1=<public_subent_ids 1>
+export PUBLICSUBNET2=<public_subent_ids 2>
+export PRIVATESUBNET1=<private_subent_ids 1>
+export PRIVATESUBNET2=<private_subent_ids 2>
+```
 
 ### GitLabサーバ
 
@@ -125,7 +133,15 @@ GitLabサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
 ```
 
-`self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。
+`self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）、SGのインバウンドCIDRは自身の環境にあわせて変更してください。また、自動スケジュールや自動スナップショットを有効にする場合、対応する機能を`true`に設定してください。
+
+**macの場合**
+
+``` sh
+sed -i "" -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
+sed -i "" -e 's:192.0.2.10:YOURCIDR:g' self-host-gitlab.tf
+```
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -135,9 +151,11 @@ terraform apply
 > yes
 ```
 
+表示される`public_dns`、`public_ip`、`runner_sg_id`はどこかに控えておいてください。
+
 terraform実行後、以下の通りGitLabサーバにアクセスしてGitLabサーバの準備をしてください。
 
-- GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックDNS名を入力してください
+- GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックIPまたはパブリックDNSを入力してください
 
 - 初回アクセスの場合、rootのパスワード変更を求められるため、パスワードを設定してください
 
@@ -145,7 +163,7 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 
 - 上部メニューバーの[Admin Area（スパナマーク）]を選択します
 
-- 左メニューから[Settings]-[General]-[Visibility and access controls]を開き`Custom Git clone URL for HTTP(S)`にEC2インスタンスのパブリックDNS名を入力して[Save changes]します。（デフォルトではAWSの外部で名前解決できない名前になっているためです。名前解決できる名前ならプラベートDNS名以外の任意のドメイン名でも構いません。）
+- 左メニューから[Settings]-[General]-[Visibility and access controls]を開き`Custom Git clone URL for HTTP(S)`にEC2インスタンスのパブリックDNS名を`http://`をつけて入力し[Save changes]します。（デフォルトではAWSの外部で名前解決できない名前になっているためです。名前解決できる名前ならプラベートDNS名以外の任意のドメイン名でも構いません。）
 
 - 左メニューから[Overview]-[Users]を開き`New user`を選択します。任意のユーザを作成してください。（パスワードはユーザ作成後、ユーザの一覧画面でeditすると設定できる。）
 
@@ -155,7 +173,7 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 
 - 上部メニューバーの[Groups]-[Your groups]を表示し、先ほど作成したグループを選択します
 
-- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Set up a group Runner manually`の2のURLと3のトークンを確認します。たとえば以下のような値となっているはずです
+- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Set up a group Runner manually`のURLとトークンを確認します。たとえば以下のような値となっているはずです
 
 1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
 2. 972hz6YiJTWUcN4ECUNk
@@ -168,7 +186,15 @@ GitLab Runnerサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
 ```
 
-`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。(SaaS版GitLabの場合、urlは`https://gitlab.com`になります。)
+`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。
+
+``` sh
+sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
+sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf # http:の`:`の前にエスケープを入れてください。例 http\:
+sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
+sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf # セフルホストの場合はSG ID ,SaaSの場合は空文字
+```
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -212,24 +238,25 @@ export APPNAME=test-app
 cp -r service-template $APPNAME
 ```
 
-また、すべてのモジュールで共通して設定する`pj`と`app`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
+また、すべてのモジュールで共通して設定する`pj`、`app`、`vpc_id`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
 
 **macの場合**
 
 ``` sh
 cd $APPNAME
-find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
+find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VPCID':g'
 ```
 
-### ソース
+### 事前準備
 
-ソースモジュールのディレクトリへ移動します。
+事前準備モジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/source
+cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/preparation
 ```
 
-`source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
+`preparation.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -238,6 +265,8 @@ terraform init
 terraform apply
 > yes
 ```
+
+outputに出力されるsg_idはService用に作成したセキュリティーグループのIDです。この後の手順で使用します。
 
 ### GitLab CICDによるソース配置
 
@@ -252,21 +281,48 @@ terraform apply
 
 ``` sh
 cd $CLONEDIR/ecs-cicd/
-find ./ -type f -exec grep -l 'AWSID' {} \; | xargs sed -i "" -e 's:AWSID:<自身が使用しているAWSアカウントのID>:g'
-find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:cicd-dev:g'
-find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:test-app:g'
+cp -r sample-repos $APPNAME
+cd $APPNAME
+find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:<自身が使用しているリージョン>:g'
+find ./ -type f -exec grep -l 'AWS-ID' {} \; | xargs sed -i "" -e 's:AWS-ID:<自身が使用しているAWSアカウントのID>:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
 find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:<Service用に作成したSGのID>:g'
-find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:<プライベートサブネットのID>:g'
-find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:<プライベートサブネットのID>:g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g'
 ```
 
 - グループに所存したユーザでGitLabにログインしてください
 
-- `new project`で新しくプロジェクト（レポジトリ）を作成します。サンプルの例だと`app`と`ecs`という名前の2つのレポジトリを作成します
+- 上部メニューバーの[Groups]-[Your groups]を表示し、先ほど作成したグループを選択します
 
-- `app`レポジトリにはアプリケーションのソースとDockerfileを配置します。また、レポジトリのルートに`.gitlab-ci.yml`を配置します。サンプルだとファイル名の頭に`.`を入れていないためリネームしてください。この`.gitlab-ci.yml`はGitLab CICDのパイプライン設定になります。このファイルに記述した内容をGitLab Runnerサーバで実行します。サンプル内のvariables配下の`ECR_HOST`と`APP_NAME`を修正してください。また、`tags`で指定した値はどのGitLab Runnerを使用するか判別するためのものです。プロジェクト用に作成したGitLab Runnerを指定するためプロジェクト名を指定します
+- グループの画面で`new project`で新しくプロジェクト（レポジトリ）を作成します。サンプルの例だと`app`と`ecs`という名前の2つのレポジトリを作成します。このとき、個別ユーザのプロジェクトではなく、グループ配下のプロジェクトとして作成してください。そうしないとRunnerが使えません。
 
-- `ecs`レポジトリにはCodeDeployによるECS Serviceデプロイをするための設定ファイルを配置します。`app`レポジトリ同様、レポジトリのルートに`.gitlab-ci.yml`を配置し、対象runnerのタグをプロジェクト名にします。variablesの`BACKET`も修正してください。また、`appspec.yaml`と`taskdef.json`の中にもアプリケーション名（cicd-dev-test-app）を指定している箇所があるため自身のアプリケーション名に修正してください
+- `app`レポジトリにはアプリケーションのソースとDockerfileを配置するため以下のコマンドを実行します。レポジトリのルートに`.gitlab-ci.yml`を配置します。サンプルだとファイル名の頭に`.`を入れていないためリネームを行っておいます。この`.gitlab-ci.yml`はGitLab CICDのパイプライン設定になります。このファイルに記述した内容をGitLab Runnerサーバで実行します。`tags`で指定した値はどのGitLab Runnerを使用するか判別するためのものです。プロジェクト用に作成したGitLab Runnerを指定するためプロジェクト名を指定しています。
+
+  ``` sh
+  cd $CLONEDIR
+  git clone <appレポジトリのクローンURL>
+  cd app
+  cp -r $CLONEDIR/ecs-cicd/$APPNAME/app/* ./
+  mv gitlab-ci.yml ./.gitlab-ci.yml
+  git add .
+  git commit -m "init"
+  git push
+  ```
+
+- `ecs`レポジトリにはCodeDeployによるECS Serviceデプロイをするための設定ファイルを配置するため以下のコマンドを実行します。`app`レポジトリ同様、レポジトリのルートに`.gitlab-ci.yml`を配置し、対象runnerのタグをプロジェクト名にします。
+
+  ``` sh
+  cd $CLONEDIR
+  git clone <ecsレポジトリのクローンURL>
+  cd ecs
+  cp -r $CLONEDIR/ecs-cicd/$APPNAME/ecs/* ./
+  mv gitlab-ci.yml ./.gitlab-ci.yml
+  git add .
+  git commit -m "init"
+  git push
+  ```
 
 - `.gitlab-ci.yml`があるレポジトリをmasterにプッシュするとGitLab CICDによりパイプラインが実行されます。`app`レポジトリでは「docker build」を行い指定したECRへプッシュします。`ecs`レポジトリでは設定ファイル群をzipファイルに圧縮し指定したS3バケットへcpします。パイプラインの実行状態は各レポジトリの左メニュー[CICD]-[パイプライン]で状況を確認できます
 
@@ -281,6 +337,14 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
 ```
 
 `source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_idは自身の環境に合わせて修正してください。
+
+``` sh
+sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
+sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET2':g' service-deploy.tf
+sed -i "" -e 's:SERVICESGID:<ServiceのSG ID>:g' service-deploy.tf
+```
 
 修正したら以下コマンドでモジュールを作成します。
 

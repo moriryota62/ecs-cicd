@@ -19,3 +19,8 @@ variable "lb_subnet_ids" {
   description = "LBが接続する異なるAZのサブネットID"
   type        = list(string)
 }
+
+variable "lb_service_sg_id" {
+  description = "ECS ServiceのSG ID"
+  type        = string
+}

@@ -54,3 +54,8 @@ variable "ec2_key_name" {
   description = "GitLab Runnerのインスタンスにsshログインするためのキーペア名"
   type        = string
 }
+
+variable "ec2_sg_id" {
+  description = "GitLab Runnerに付与するSGのID"
+  type        = string
+}

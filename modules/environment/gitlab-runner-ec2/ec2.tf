@@ -79,7 +79,7 @@ resource "aws_instance" "gitlab_runner" {
   iam_instance_profile        = aws_iam_instance_profile.gitlab_runner.name
   associate_public_ip_address = true
   subnet_id                   = var.ec2_subnet_id
-  vpc_security_group_ids      = [aws_security_group.gitlab_runner.id]
+  vpc_security_group_ids      = var.ec2_sg_id != "" ? [var.ec2_sg_id] : [aws_security_group.gitlab_runner.0.id]
   user_data                   = local.default_init_script
 
   tags = merge(

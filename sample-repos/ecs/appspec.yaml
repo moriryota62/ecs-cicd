@@ -5,11 +5,11 @@ Resources:
       Properties:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "APP-NAME-task"
+          ContainerName: "test-app-task"
           ContainerPort: 80
         NetworkConfiguration:
           AwsvpcConfiguration:
-            Subnets: ["PRIVATE-SUBNET-1","PRIVATE-SUBNET-2"]
-            SecurityGroups: ["SG-ID"]
+            Subnets: ["subnet-08f779b658be3a0e3","PRIVATE-SUBNET-2"]
+            SecurityGroups: ["sg-03f8a6701c4c9b5bd"]
             AssignPublicIp: "DISABLED"
 version: 0.0

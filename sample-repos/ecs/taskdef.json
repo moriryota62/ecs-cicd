@@ -1,8 +1,8 @@
 {
-    "executionRoleArn": "arn:aws:iam::AWS-ID:role/PJ-NAME-EcsTaskExecuteRole",
+    "executionRoleArn": "arn:aws:iam::456247443832:role/cicd-dev-EcsTaskExecuteRole",
     "containerDefinitions": [
         {
-            "name": "APP-NAME-task",
+            "name": "test-app-task",
             "image": "<IMAGE1_NAME>",
             "memory": 512,
             "cpu": 256,
@@ -17,7 +17,7 @@
             "environment": [
                 {
                     "name": "appname",
-                    "value": "APP-NAME"
+                    "value": "test-app"
                 }
             ]
         }
@@ -28,5 +28,5 @@
     "networkMode": "awsvpc",
     "cpu": "256",
     "memory": "512",
-    "family": "APP-NAME-task"
+    "family": "test-app-task"
 }

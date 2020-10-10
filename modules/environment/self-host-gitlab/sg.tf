@@ -29,3 +29,12 @@ resource "aws_security_group" "gitlab" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group_rule" "gitlab_add_runner" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.gitlab_runner.id
+  security_group_id        = aws_security_group.gitlab.id
+}

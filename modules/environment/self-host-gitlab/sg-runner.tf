@@ -1,6 +1,4 @@
 resource "aws_security_group" "gitlab_runner" {
-  count = var.ec2_sg_id != "" ? 0 : 1
-
   name        = "${var.pj}-gitlab-runner-sg"
   vpc_id      = var.vpc_id
   description = "For GitLab Runner EC2"
