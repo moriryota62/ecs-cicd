@@ -208,7 +208,7 @@ terraform apply
 
 - グループに所存したユーザでGitLabにログインしてください
 
-- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Available Runners`に作成したRunnerが表示されていれば登録完了です
+- グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Available Runners`に作成したRunnerが表示されていれば登録完了です。表示されるまでには少し時間がかかります
 
 ### ECSクラスタ
 
@@ -218,7 +218,7 @@ ECSクラスタモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
 ```
 
-`ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
+`ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -256,7 +256,7 @@ find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VP
 cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/preparation
 ```
 
-`preparation.tf`を編集します。`region`と`locals`配下のパラメータを修正します。
+`preparation.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
 
 修正したら以下コマンドでモジュールを作成します。
 
@@ -267,6 +267,10 @@ terraform apply
 ```
 
 outputに出力されるsg_idはService用に作成したセキュリティーグループのIDです。この後の手順で使用します。
+
+``` sh
+export SGID=<sg_id>
+```
 
 ### GitLab CICDによるソース配置
 
@@ -287,7 +291,7 @@ find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:<自
 find ./ -type f -exec grep -l 'AWS-ID' {} \; | xargs sed -i "" -e 's:AWS-ID:<自身が使用しているAWSアカウントのID>:g'
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
 find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
-find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:<Service用に作成したSGのID>:g'
+find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:'$SGID':g'
 find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g'
 find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g'
 ```
@@ -342,8 +346,8 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
 sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
 sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
 sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET2':g' service-deploy.tf
-sed -i "" -e 's:SERVICESGID:<ServiceのSG ID>:g' service-deploy.tf
+sed -i "" -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
+sed -i "" -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
 ```
 
 修正したら以下コマンドでモジュールを作成します。

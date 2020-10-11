@@ -8,8 +8,8 @@ docker-build:
     entrypoint: [""]
   stage: build
   variables:
-    ECR_HOST: 456247443832.dkr.ecr.us-east-2.amazonaws.com
-    APP_NAME: cicd-dev-test-app
+    ECR_HOST: AWS-ID.dkr.ecr.REGION.amazonaws.com
+    APP_NAME: PJ-NAME-APP-NAME
   script:
     - |
           cat > /kaniko/.docker/config.json <<EOF
@@ -23,4 +23,4 @@ docker-build:
   only:
     - master
   tags:
-    - cicd-dev
+    - PJ-NAME

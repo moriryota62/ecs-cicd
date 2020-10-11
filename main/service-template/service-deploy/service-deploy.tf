@@ -65,6 +65,7 @@ module "service" {
   service_subnets           = local.private_subnet_ids
   service_container_name    = "dummy"
   service_container_port    = 80
+  service_sg_id             = local.service_sg_id
 
   ## ELB Listener & targetgroup
   elb_arn                       = module.alb.alb_arn

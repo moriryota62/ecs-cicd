@@ -65,6 +65,11 @@ variable "service_container_port" {
   type        = number
 }
 
+variable "service_sg_id" {
+  description = "サービスに付与するセキュリティグループ"
+  type        = string
+}
+
 ## elb-listener-target.tf
 variable "elb_arn" {
   description = "サービスに紐付けるELBのARN"
