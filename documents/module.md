@@ -43,9 +43,9 @@
 
 `GitLab Runner`はGitLab CICDによるパイプライン処理を実行するGitLab Runnerサーバを構築するモジュールです。AMIは最新のAmazon Linuxを使用します。接続するGitLabサーバと認証用のトークンを設定し、Runnerのセットアップを行います。このセットアップはUserdataにより自動で行います。また、GitLab RunnerサーバにはCICD処理のためS3とECRへの書き込みを許可するIAMロールを割り当てます。
 
-`ECSクラスタ`はECSのサービスをまとめるクラスタを構築するモジュールです。また、ECSタスクやCodePipeline、CodeDeployに必要となる共通のIAMポリシーおよびロールを作成します。
-
 ### ECSクラスタ
+
+`ECSクラスタ`はECSのサービスをまとめるクラスタを構築するモジュールです。また、ECSタスクやCodePipeline、CodeDeployに必要となる共通のIAMポリシーおよびロールを作成します。
 
 ## サービス構築モジュールの説明
 
