@@ -324,7 +324,7 @@ terraform apply
 構築したときの逆の以下モジュール順に`terraform destroy`を実行してください。
 
 1. サービスデプロイ
-2. ソース
+2. 事前準備
 3. ECSクラスタ
 4. GitLab Runner
 5. GitLabサーバ
