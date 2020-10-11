@@ -54,8 +54,6 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody
 
 ### ネットワーク
 
-![](./images/use-network.svg)
-
 すでにVPCやサブネットがある場合、ネットワークのモジュールは実行しなくても良いです。その場合はVPCとサブネットのIDを確認しておいてください。ネットワークモジュールでVPCやサブネットを作成する場合は以下の手順で作成します。
 
 ネットワークモジュールのディレクトリへ移動します。
@@ -84,9 +82,11 @@ export PRIVATESUBNET1=<private_subent_ids 1>
 export PRIVATESUBNET2=<private_subent_ids 2>
 ```
 
-### GitLabサーバ
+**作成後のイメージ**
 
-![](./images/use-gitlab.svg)
+![](./images/use-network.svg)
+
+### GitLabサーバ
 
 インターネットのSaaS版GitLabを使用する場合、GitLabサーバのモジュールは実行しなくても良いです。SaaS版でもグループの作成やRunnerトークンの確認は実施してください。
 
@@ -141,9 +141,11 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 1. http://ec2-3-138-55-5.us-east-2.compute.amazonaws.com/
 2. 972hz6YiJTWUcN4ECUNk
 
-### GitLab Runner
+**作成後のイメージ**
 
-![](./images/use-runner.svg)
+![](./images/use-gitlab.svg)
+
+### GitLab Runner
 
 GitLab Runnerサーバモジュールのディレクトリへ移動します。
 
@@ -175,9 +177,11 @@ terraform apply
 
 - グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Available Runners`に作成したRunnerが表示されていれば登録完了です。表示されるまでには少し時間がかかります
 
-### ECSクラスタ
+**作成後のイメージ**
 
-![](./images/use-ecs.svg)
+![](./images/use-runner.svg)
+
+### ECSクラスタ
 
 ECSクラスタモジュールのディレクトリへ移動します。
 
@@ -194,6 +198,10 @@ terraform init
 terraform apply
 > yes
 ```
+
+**作成後のイメージ**
+
+![](./images/use-ecs.svg)
 
 ## サービス構築
 
@@ -217,8 +225,6 @@ find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VP
 
 ### 事前準備
 
-![](./images/use-pre.svg)
-
 事前準備モジュールのディレクトリへ移動します。
 
 ``` sh
@@ -240,6 +246,10 @@ outputに出力されるsg_idはService用に作成したセキュリティー�
 ``` sh
 export SGID=<sg_id>
 ```
+
+**作成後のイメージ**
+
+![](./images/use-pre.svg)
 
 ### GitLab CICDによるソース配置
 
@@ -303,8 +313,6 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 
 ### サービスデプロイ
 
-![](./images/use-service.svg)
-
 サービスデプロイモジュールのディレクトリへ移動します。
 
 ``` sh
@@ -330,6 +338,10 @@ terraform apply
 ```
 
 実行後に出力される`dns_name`はLBのDNS名です。コピーしてWEBブラウザでアクセスします。すべて上手く行けば以下のようなメッセージの画面が表示されます。なお、デプロイはterraform完了からさらに数分の時間を要します。デプロイ失敗なのか待ちなのか確認するには、マネジメントコンソールでcodepipelineの画面を開き現在の状況を追ってみるとよいでしょう。Deployが進行中であればまだしばらく待ったください。
+
+**作成後のイメージ**
+
+![](./images/use-service.svg)
 
 ## 環境削除
 
