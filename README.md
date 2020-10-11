@@ -1,10 +1,10 @@
 # レポジトリの説明
 
-GitLab + ECS CICDパイプラインを構築するTerraformモジュール群とそのセットアップ方法を格納したレポジトリです。GitLabに作成するレポジトリのサンプルも格納しています。本レポジトリで作成するCICDの全体像は以下の通りです。
+GitLab + ECS CICDパイプラインを構築するTerraformモジュール群とそのセットアップ方法を格納したレポジトリです。GitLabに作成するレポジトリのサンプルも格納しています。本レポジトリで作成するAWS環境およびCICDの全体像は以下の通りです。
 
-![](./documents/images/aws.svg)
+![AWS環境図](./documents/images/aws.svg)
 
-[!CICDフロー図](./documents/images/cicd.drawio)
+![CICDフロー図](./documents/images/cicd.svg)
 
 # バージョン
 
