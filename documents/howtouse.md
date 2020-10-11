@@ -54,6 +54,8 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody
 
 ### ネットワーク
 
+![](./images/use-network.svg)
+
 すでにVPCやサブネットがある場合、ネットワークのモジュールは実行しなくても良いです。その場合はVPCとサブネットのIDを確認しておいてください。ネットワークモジュールでVPCやサブネットを作成する場合は以下の手順で作成します。
 
 ネットワークモジュールのディレクトリへ移動します。
@@ -83,6 +85,8 @@ export PRIVATESUBNET2=<private_subent_ids 2>
 ```
 
 ### GitLabサーバ
+
+![](./images/use-gitlab.svg)
 
 インターネットのSaaS版GitLabを使用する場合、GitLabサーバのモジュールは実行しなくても良いです。SaaS版でもグループの作成やRunnerトークンの確認は実施してください。
 
@@ -139,6 +143,8 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 
 ### GitLab Runner
 
+![](./images/use-runner.svg)
+
 GitLab Runnerサーバモジュールのディレクトリへ移動します。
 
 ``` sh
@@ -170,6 +176,8 @@ terraform apply
 - グループの画面で左メニューから[Settings]-[CICD]-[Runners]を開きます。`Available Runners`に作成したRunnerが表示されていれば登録完了です。表示されるまでには少し時間がかかります
 
 ### ECSクラスタ
+
+![](./images/use-ecs.svg)
 
 ECSクラスタモジュールのディレクトリへ移動します。
 
@@ -208,6 +216,8 @@ find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VP
 ```
 
 ### 事前準備
+
+![](./images/use-pre.svg)
 
 事前準備モジュールのディレクトリへ移動します。
 
@@ -292,6 +302,8 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 - 上手く実行できればECRおよびS3にデータが格納でてきるはずなので確認してください
 
 ### サービスデプロイ
+
+![](./images/use-service.svg)
 
 サービスデプロイモジュールのディレクトリへ移動します。
 
