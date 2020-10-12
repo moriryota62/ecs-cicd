@@ -19,14 +19,16 @@
 
 ECSデプロイ設定のレポジトリに対し`masterブランチに変更がプッシュ`されるとGitLab CICDによりECSデプロイ設定のデプロイパイプラインが自動実行されます。サンプルレポジトリの場合は以下のようなパイプラインを定義しています。パイプラインの設定内容はレポジトリのルートにある`.gitlab-ci.yml`を参照ください。
 
-- [kaniko](https://docs.gitlab.com/ee/ci/docker/using_kaniko.html)を使用し、レポジトリのルートにあるdockerfileをbuildする
-- buildしたimageは以下の2つのタグを付与しECRにプッシュする
-  - <ECRホスト名>/<PJ-NAME-APP-NAME>:latest
-  - <ECRホスト名>/<PJ-NAME-APP-NAME>:<コミットハッシュ>
+- [ryotamori/alpine-zip](https://hub.docker.com/repository/docker/ryotamori/alpine-zip/general)イメージを使用し、レポジトリ内のファイル（`appspec.yaml`、`taskdef.json`）をzipファイルにまとめる
+- zipファイルをS3の`s3://<PJ-NAME-APP-NAME>`バケットに格納する
 - このパイプラインは`master`ブランチに対する変更時に実行する
 - パイプラインは`<PJ-NAME>`のタグがついたrunnerで実行する
 
 ## CloudWatch
+
+### ECRの変更検知
+
+### S3の変更検知
 
 ## CodePipeline
 
