@@ -5,7 +5,8 @@ stages:
 
 zip-build:
   image: 
-    name: kramos/alpine-zip
+    # name: kramos/alpine-zip
+    name: ryotamori/alpine-zip:latest
     entrypoint: [""]
   stage: build
   script:
