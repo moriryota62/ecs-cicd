@@ -103,16 +103,16 @@ module "deploy-pipeline" {
   codedeploy_green_target_group_name = module.service.green_target_group_name
 
   # S3
-  s3_service_settings_bucket_name = "${local.app_full}"
+  s3_service_settings_bucket_name = local.app_full
   s3_service_settings_bucket_arn  = "arn:aws:s3:::${local.app_full}"
   s3_artifact_store_name          = "${local.app_full}-artifact"
 
   # codepipeline
-  codepipeline_ecr_repository_name = "${local.app_full}"
+  codepipeline_ecr_repository_name = local.app_full
   codepipeline_pipeline_role_arn   = "arn:aws:iam::${data.aws_caller_identity.self.account_id}:role/${local.pj}-CodePipelineRole"
 
   # cloudwatch event
-  cloudwatch_event_ecr_repository_name = "${local.app_full}"
+  cloudwatch_event_ecr_repository_name = local.app_full
   cloudwatch_event_events_role_arn     = "arn:aws:iam::${data.aws_caller_identity.self.account_id}:role/${local.pj}-CloudWatchEventsRole"
   cloudwatch_event_events_role_name    = "${local.pj}-CloudWatchEventsRole"
 }
