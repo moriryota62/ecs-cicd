@@ -20,7 +20,7 @@ resource "aws_security_group" "service" {
   # }
 
   egress {
-    description = "Allow any inbound"
+    description = "Allow any"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
