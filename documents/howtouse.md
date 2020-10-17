@@ -161,7 +161,7 @@ sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
 sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
 sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf # http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
 sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
-sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf # セフルホストの場合はSG ID ,SaaSの場合は空文字
+sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf # セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
 ```
 
 修正したら以下コマンドでモジュールを作成します。
@@ -358,3 +358,96 @@ terraform apply
 5. GitLabサーバ
 6. ネットワーク
 
+## 構築コマンドリスト
+
+``` sh
+# 準備
+export CLONEDIR=`pwd`
+git clone https://github.com/moriryota62/ecs-cicd.git
+# 環境構築
+cd $CLONEDIR/ecs-cicd/
+export PJNAME=cicd-dev
+cp -r main $PJNAME
+cd $PJNAME
+find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-northeast-1:us-east-2:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
+find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
+## ネットワーク
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
+terraform init
+terraform apply
+export VPCID=<vpc_id>
+export PUBLICSUBNET1=<public_subent_ids 1>
+export PUBLICSUBNET2=<public_subent_ids 2>
+export PRIVATESUBNET1=<private_subent_ids 1>
+export PRIVATESUBNET2=<private_subent_ids 2>
+## GitLabサーバ
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
+sed -i "" -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
+sed -i "" -e 's:192.0.2.10:YOURCIDR:g' self-host-gitlab.tf
+terraform init
+terraform apply
+## GitLab runner
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
+sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
+sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf
+sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
+sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.terraform
+terraform init
+terraform apply
+## ECSクラスタ
+cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
+terraform init
+terraform apply
+# サービス構築
+cd $CLONEDIR/ecs-cicd/$PJNAME/
+export APPNAME=test-app
+cp -r service-template $APPNAME
+cd $APPNAME
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
+find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VPCID':g'
+## 事前準備
+cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/preparation
+terraform init
+terraform apply
+## ソース配置
+cd $CLONEDIR/ecs-cicd/
+cp -r sample-repos $APPNAME
+cd $APPNAME
+find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:<自身が使用しているリージョン>:g'
+find ./ -type f -exec grep -l 'AWS-ID' {} \; | xargs sed -i "" -e 's:AWS-ID:<自身が使用しているAWSアカウントのID>:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
+find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:'$SGID':g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g'
+### app
+cd $CLONEDIR
+git clone <appレポジトリのクローンURL>
+cd app
+cp -r $CLONEDIR/ecs-cicd/$APPNAME/app/* ./
+mv gitlab-ci.yml ./.gitlab-ci.yml
+git add .
+git commit -m "init"
+git push
+### ecs
+cd $CLONEDIR
+git clone <ecsレポジトリのクローンURL>
+cd ecs
+cp -r $CLONEDIR/ecs-cicd/$APPNAME/ecs/* ./
+mv gitlab-ci.yml ./.gitlab-ci.yml
+git add .
+git commit -m "init"
+git push
+## サービスデプロイ
+cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
+sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
+sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
+sed -i "" -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
+sed -i "" -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
+terraform init
+terraform apply
+```
