@@ -11,7 +11,7 @@
 
 # CICDフロー説明
 
-本レポジトリで構成するCICDについて解説します。全体の流れは以下の通りです。大きく、GitLab CICDでソースを準備する部分、CloudWatchで変更を検出する部分、CodePipelineでデプロイする部分に分かれます。
+本レポジトリで構成するCICDについて解説します。全体の流れは以下の通りです。大きく、GitLab CICDでソースを準備するいわゆる`CI`の部分、CloudWatchで変更を検出する部分、CodePipelineでデプロイするいわゆる`CD`の部分に分かれます。
 
 ![](./images/cicd.svg)
 
