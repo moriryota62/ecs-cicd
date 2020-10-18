@@ -82,7 +82,7 @@ terraform apply
 > yes
 ```
 
-実行後に出力される`vpc_id`や`public_subent_ids`などは後続のモジュールで使用します。内容を控えておくと良いでしょう。
+実行後に出力される`vpc_id`や`public_subent_ids`などは後続のモジュールで使用します。
 
 ``` sh
 export VPCID=<vpc_id>

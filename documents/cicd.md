@@ -1,8 +1,25 @@
+- [CICDフロー説明](#cicdフロー説明)
+  - [GitLab CICD](#gitlab-cicd)
+    - [アプリケーションソース](#アプリケーションソース)
+    - [ECSデプロイ設定](#ecsデプロイ設定)
+  - [CloudWatch](#cloudwatch)
+    - [ECRの変更検知](#ecrの変更検知)
+    - [S3の変更検知](#s3の変更検知)
+  - [CodePipeline](#codepipeline)
+    - [Sourceステージ](#sourceステージ)
+    - [Deployステージ](#deployステージ)
+
 # CICDフロー説明
+
+本レポジトリで構成するCICDについて解説します。全体の流れは以下の通りです。大きく、GitLab CICDでソースを準備する部分、CloudWatchで変更を検出する部分、CodePipelineでデプロイする部分に分かれます。
+
+![](./images/cicd.svg)
 
 ##  GitLab CICD
 
 アプリケーションおよびECSのデプロイ設定はそれぞれGitLabのレポジトリで管理しています。各レポジトリに変更がプッシュされるとGitLab CICDにより変更内容がAWSのソース置き場（ECR or S3）に配置されます。
+
+![](./images/cicd-gitlab.svg)
 
 ### アプリケーションソース
 
@@ -29,6 +46,8 @@ ECSデプロイ設定のレポジトリに対し`masterブランチに変更が�
 
 ソース置き場（ECR or S3）が更新されるとその変更を検知し、CloudWatchからCodePipelineを実行します。
 
+![](./images/cicd-cloudwatch.svg)
+
 ### ECRの変更検知
 
 ECRの変更はCloudWatch Eventで検知します。指定したレポジトリに対するイメージプッシュが成功したイベントを検知するとCodePipelineのパイプラインを開始します。
@@ -40,6 +59,8 @@ S3の変更はCloudTrailとCloudWatch Eventで検知します。まず、対象�
 ## CodePipeline
 
 CodePipelineは2つのステージで構成します。`Source`ステージと`Deploy`ステージです。これらのステージは順番に実行されます。`Source`ステージはデプロイに必要な情報を取得するステージです。`Deploy`はCodeDeployを実行し、ECSサービスのタスクをBlue/Greenデプロイで更新します。
+
+![](./images/cicd-code.svg)
 
 ### Sourceステージ
 
