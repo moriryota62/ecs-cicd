@@ -25,6 +25,8 @@ locals {
   lb_trafic_port       = 80
   lb_traffic_protocol  = "HTTP"
   lb_health_check_path = "/"
+
+  codedeploy_termination_wait_time_in_minutes = 5
 }
 
 data "aws_caller_identity" "self" { }
@@ -94,13 +96,14 @@ module "deploy-pipeline" {
 
   # module parameter
   # codedeploy
-  codedeploy_deployment_group_name   = "${local.app_full}-deploy-group"
-  codedeploy_service_role_arn        = "arn:aws:iam::${data.aws_caller_identity.self.account_id}:role/${local.pj}-CodeDeployRole"
-  codedeploy_ecs_cluster_name        = "${local.pj}-cluster"
-  codedeploy_ecs_service_name        = module.service.ecs_service_name
-  codedeploy_prod_listener_arn       = module.service.listener_arn
-  codedeploy_blue_target_group_name  = module.service.blue_target_group_name
-  codedeploy_green_target_group_name = module.service.green_target_group_name
+  codedeploy_deployment_group_name            = "${local.app_full}-deploy-group"
+  codedeploy_service_role_arn                 = "arn:aws:iam::${data.aws_caller_identity.self.account_id}:role/${local.pj}-CodeDeployRole"
+  codedeploy_ecs_cluster_name                 = "${local.pj}-cluster"
+  codedeploy_ecs_service_name                 = module.service.ecs_service_name
+  codedeploy_prod_listener_arn                = module.service.listener_arn
+  codedeploy_blue_target_group_name           = module.service.blue_target_group_name
+  codedeploy_green_target_group_name          = module.service.green_target_group_name
+  codedeploy_termination_wait_time_in_minutes = local.codedeploy_termination_wait_time_in_minutes
 
   # S3
   s3_service_settings_bucket_name = local.app_full

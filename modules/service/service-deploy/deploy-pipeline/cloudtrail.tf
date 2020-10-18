@@ -1,7 +1,6 @@
-# valuesで指定したS3バケットの更新を検知してs3_bucket_nameで指定したバケットにログを出力する。
 resource "aws_cloudtrail" "this" {
-  name                          = "${var.app_full}-cloudtraile"
-  s3_bucket_name                = aws_s3_bucket.cloudtraile.id
+  name           = "${var.app_full}-cloudtraile"
+  s3_bucket_name = aws_s3_bucket.cloudtraile.id
   
   event_selector {
       data_resource {

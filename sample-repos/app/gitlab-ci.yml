@@ -19,7 +19,7 @@ docker-build:
             }
           }
           EOF
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination ${ECR_HOST}/$APP_NAME:latest --destination ${ECR_HOST}/$APP_NAME:$CI_COMMIT_SHA
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination ${ECR_HOST}/$APP_NAME:latest
   only:
     - master
   tags:

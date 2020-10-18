@@ -44,6 +44,15 @@ cp -r main $PJNAME
 
 また、すべてのモジュールで共通して設定する`pj`、`region`、`owner`の値はsedで置換しておくと後の手順が楽です。regionはデフォルトでは'ap-northeast-1'を指定しています。変える必要がなければsedする必要ありません。
 
+**Linuxの場合**
+
+``` sh
+cd $PJNAME
+find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i -e 's:ap-northeast-1:us-east-2:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i -e 's:PJ-NAME:'$PJNAME':g'
+find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i -e 's:OWNER:nobody:g'
+```
+
 **macの場合**
 
 ``` sh
@@ -99,12 +108,24 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
 
 `self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）、SGのインバウンドCIDRは自身の環境にあわせて変更してください。また、自動スケジュールや自動スナップショットを有効にする場合、対応する機能を`true`に設定してください。
 
+``` sh
+export YOURACCESSCIDR=<cidr>
+```
+
+**Linuxの場合**
+
+``` sh
+sed -i -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
+sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
+sed -i -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
+```
+
 **macの場合**
 
 ``` sh
 sed -i "" -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
 sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
-sed -i "" -e 's:192.0.2.10:YOURCIDR:g' self-host-gitlab.tf
+sed -i "" -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
 ```
 
 修正したら以下コマンドでモジュールを作成します。
@@ -156,12 +177,28 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
 
 `gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。
 
+**Linuxの場合**
+
 ``` sh
 sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
 sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
-sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf # http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
+# ↓http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
+sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf 
 sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
-sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf # セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
+# ↓セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
+sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
+```
+
+**macの場合**
+
+``` sh
+sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
+sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
+# ↓http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
+sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf
+sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
+# ↓セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
+sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
 ```
 
 修正したら以下コマンドでモジュールを作成します。
@@ -216,6 +253,14 @@ cp -r service-template $APPNAME
 
 また、すべてのモジュールで共通して設定する`pj`、`app`、`vpc_id`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
 
+**Linuxの場合**
+
+``` sh
+cd $APPNAME
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i -e 's:APP-NAME:'$APPNAME':g'
+find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i -e 's:VPC-ID:'$VPCID':g'
+```
+
 **macの場合**
 
 ``` sh
@@ -262,6 +307,23 @@ export SGID=<sg_id>
 |ECSのデプロイ設定|S3|`cicd-dev-test-app`バケット|
 
 上記配置場所に対象データを格納しないとこの後に実行する`サービスデプロイ`モジュールが上手く動きません。GitLab CICDを動かすための環境も準備できているため、GitLab CICDによりGitLabのレポジトリにプッシュすれば自動で配置場所に対象データを格納できるようにしましょう。サンプルとなるレポジトリを`sample-repos`ディレクトリ配下に用意しています。これらのサンプルを参考に以下の様にGitLab側の設定を行います。なお、サンプルディレクトリ配下のファイルを使う場合、以下のように置換を行ってください。
+
+**Linuxの場合**
+
+``` sh
+cd $CLONEDIR/ecs-cicd/
+cp -r sample-repos $APPNAME
+cd $APPNAME
+find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i -e 's:REGION:<自身が使用しているリージョン>:g'
+find ./ -type f -exec grep -l 'AWS-ID' {} \; | xargs sed -i -e 's:AWS-ID:<自身が使用しているAWSアカウントのID>:g'
+find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i -e 's:PJ-NAME:'$PJNAME':g'
+find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i -e 's:APP-NAME:'$APPNAME':g'
+find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i -e 's:SG-ID:'$SGID':g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g'
+find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g'
+```
+
+**macの場合**
 
 ``` sh
 cd $CLONEDIR/ecs-cicd/
@@ -322,6 +384,18 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
 
 `source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_idは自身の環境に合わせて修正してください。
 
+**Linuxの場合**
+
+``` sh
+sed -i  -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
+sed -i  -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
+sed -i  -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
+sed -i  -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
+sed -i  -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
+```
+
+**macの場合**
+
 ``` sh
 sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
 sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
@@ -346,6 +420,7 @@ terraform apply
 
 ## サービスの追加
 
+サービスを追加したい場合、[サービス構築](#サービス構築)の手順を繰り返します。この時、APPNAMEは必ず変えるようにしてください。
 
 ## 環境削除
 
@@ -357,97 +432,3 @@ terraform apply
 4. GitLab Runner
 5. GitLabサーバ
 6. ネットワーク
-
-## 構築コマンドリスト
-
-``` sh
-# 準備
-export CLONEDIR=`pwd`
-git clone https://github.com/moriryota62/ecs-cicd.git
-# 環境構築
-cd $CLONEDIR/ecs-cicd/
-export PJNAME=cicd-dev
-cp -r main $PJNAME
-cd $PJNAME
-find ./ -type f -exec grep -l 'ap-northeast-1' {} \; | xargs sed -i "" -e 's:ap-northeast-1:us-east-2:g'
-find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
-find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
-## ネットワーク
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
-terraform init
-terraform apply
-export VPCID=<vpc_id>
-export PUBLICSUBNET1=<public_subent_ids 1>
-export PUBLICSUBNET2=<public_subent_ids 2>
-export PRIVATESUBNET1=<private_subent_ids 1>
-export PRIVATESUBNET2=<private_subent_ids 2>
-## GitLabサーバ
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
-sed -i "" -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
-sed -i "" -e 's:192.0.2.10:YOURCIDR:g' self-host-gitlab.tf
-terraform init
-terraform apply
-## GitLab runner
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
-sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
-sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf
-sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
-sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.terraform
-terraform init
-terraform apply
-## ECSクラスタ
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
-terraform init
-terraform apply
-# サービス構築
-cd $CLONEDIR/ecs-cicd/$PJNAME/
-export APPNAME=test-app
-cp -r service-template $APPNAME
-cd $APPNAME
-find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
-find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VPCID':g'
-## 事前準備
-cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/preparation
-terraform init
-terraform apply
-## ソース配置
-cd $CLONEDIR/ecs-cicd/
-cp -r sample-repos $APPNAME
-cd $APPNAME
-find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:<自身が使用しているリージョン>:g'
-find ./ -type f -exec grep -l 'AWS-ID' {} \; | xargs sed -i "" -e 's:AWS-ID:<自身が使用しているAWSアカウントのID>:g'
-find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
-find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
-find ./ -type f -exec grep -l 'SG-ID' {} \; | xargs sed -i "" -e 's:SG-ID:'$SGID':g'
-find ./ -type f -exec grep -l 'PRIVATE-SUBNET-1' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g'
-find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g'
-### app
-cd $CLONEDIR
-git clone <appレポジトリのクローンURL>
-cd app
-cp -r $CLONEDIR/ecs-cicd/$APPNAME/app/* ./
-mv gitlab-ci.yml ./.gitlab-ci.yml
-git add .
-git commit -m "init"
-git push
-### ecs
-cd $CLONEDIR
-git clone <ecsレポジトリのクローンURL>
-cd ecs
-cp -r $CLONEDIR/ecs-cicd/$APPNAME/ecs/* ./
-mv gitlab-ci.yml ./.gitlab-ci.yml
-git add .
-git commit -m "init"
-git push
-## サービスデプロイ
-cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
-sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
-sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
-sed -i "" -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
-sed -i "" -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
-terraform init
-terraform apply
-```

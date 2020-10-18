@@ -26,7 +26,7 @@ resource "aws_codedeploy_deployment_group" "ecs" {
 
     terminate_blue_instances_on_deployment_success {
       action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
+      termination_wait_time_in_minutes = var.codedeploy_termination_wait_time_in_minutes
     }
   }
 

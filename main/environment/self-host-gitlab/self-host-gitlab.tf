@@ -25,13 +25,13 @@ locals {
     {
       port        = 80
       protocol    = "tcp"
-      cidr_blocks = ["192.0.2.10/32"]
+      cidr_blocks = ["YOURCIDR"]
       description = "http work pc"
     },
     {
       port        = 22
       protocol    = "tcp"
-      cidr_blocks = ["192.0.2.10/32"]
+      cidr_blocks = ["YOURCIDR"]
       description = "ssh work pc"
     }
   ]

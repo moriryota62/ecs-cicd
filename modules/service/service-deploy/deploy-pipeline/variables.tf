@@ -61,6 +61,11 @@ variable "codedeploy_green_target_group_name" {
   type        = string
 }
 
+variable "codedeploy_termination_wait_time_in_minutes" {
+  description = "現行バージョンのタスクを削除するまでの待ち時間"
+  type        = number
+}
+
 # s3.tf
 variable "s3_service_settings_bucket_name" {
   description = "appspec.yamlをzipにしたsettings.zipを配置するバケット名"
