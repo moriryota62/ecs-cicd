@@ -8,7 +8,7 @@ const server = http.createServer((req, res) => {
     <!DOCTYPE html>
         <html lang="ja">
             <body>
-                <h1>これは GitLab CICD と CodePipeline & Deploy によるCICDでデプロイされたアプリケーション</h1>
+                <h1>これはCICDでデプロイされたアプリケーション</h1>
                 <h1> ${env.appname} です。</h1>
             </body>
     </html>`);

@@ -10,15 +10,6 @@ resource "aws_security_group" "service" {
     var.tags
   )
 
-  # ingress {
-  #   description     = "Allow any inbound"
-  #   from_port       = 0
-  #   to_port         = 0
-  #   protocol        = "-1"
-  #   security_groups = var.service_allow_inbound_sgs
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-
   egress {
     description = "Allow any"
     from_port   = 0

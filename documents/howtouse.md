@@ -8,6 +8,9 @@
     - [事前準備](#事前準備)
     - [GitLab CICDによるソース配置](#gitlab-cicdによるソース配置)
     - [サービスデプロイ](#サービスデプロイ)
+  - [サービスの更新](#サービスの更新)
+    - [アプリケーションの更新](#アプリケーションの更新)
+    - [ECS設定の更新](#ecs設定の更新)
   - [サービスの追加](#サービスの追加)
   - [環境削除](#環境削除)
 
@@ -34,12 +37,12 @@ git clone https://github.com/moriryota62/ecs-cicd.git
 
 ## 環境構築
 
-環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。`main`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
+環境構築はプロジェクトで一度だけ行います。環境の分け方によっては複数実施するかもしれません。`main-template`ディレクトリをコピーして`環境名`ディレクトリなどの作成がオススメです。以下の手順では`cicd-dev`という環境名を想定して記載します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/
+cd $CLONEDIR/ecs-cicd/terraform
 export PJNAME=cicd-dev
-cp -r main $PJNAME
+cp -r main-template $PJNAME
 ```
 
 また、すべてのモジュールで共通して設定する`pj`、`region`、`owner`の値はsedで置換しておくと後の手順が楽です。regionはデフォルトでは'ap-northeast-1'を指定しています。変える必要がなければsedする必要ありません。
@@ -69,7 +72,7 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody
 ネットワークモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/network
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/environment/network
 ```
 
 `network.tf`を編集します。`region`と`locals`配下のパラメータを修正します。VPCやサブネットのCIDRは自身の環境にあわせて任意のアドレス帯に修正してください。
@@ -103,7 +106,7 @@ export PRIVATESUBNET2=<private_subent_ids 2>
 GitLabサーバモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/self-host-gitlab
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/environment/self-host-gitlab
 ```
 
 `self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）、SGのインバウンドCIDRは自身の環境にあわせて変更してください。また、自動スケジュールや自動スナップショットを有効にする場合、対応する機能を`true`に設定してください。
@@ -172,7 +175,7 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 GitLab Runnerサーバモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/environment/gitlab-runner
 ```
 
 `gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。
@@ -180,13 +183,13 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/environment/gitlab-runner
 **Linuxの場合**
 
 ``` sh
-sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
+sed -i -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
+sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
 # ↓http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
-sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf 
-sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
+sed -i -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf 
+sed -i -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
 # ↓セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
-sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
+sed -i -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
 ```
 
 **macの場合**
@@ -224,7 +227,7 @@ terraform apply
 ECSクラスタモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/environment/ecs-cluster
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/environment/ecs-cluster
 ```
 
 `ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
@@ -246,7 +249,7 @@ terraform apply
 サービスの構築はサービスごとに行います。terraformのコードもサービスごとに作成するため、あらかじめ用意された`service-template`ディレクトリをコピーし、`サービス名`ディレクトリなどの作成がオススメです。以下の手順では`test-app`というサービス名を想定して記載します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/
 export APPNAME=test-app
 cp -r service-template $APPNAME
 ```
@@ -274,7 +277,7 @@ find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VP
 事前準備モジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/preparation
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/$APPNAME/preparation
 ```
 
 `preparation.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
@@ -311,7 +314,7 @@ export SGID=<sg_id>
 **Linuxの場合**
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/
+cd $CLONEDIR/ecs-cicd
 cp -r sample-repos $APPNAME
 cd $APPNAME
 find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i -e 's:REGION:<自身が使用しているリージョン>:g'
@@ -326,7 +329,7 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i -e 's:PRIV
 **macの場合**
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/
+cd $CLONEDIR/ecs-cicd
 cp -r sample-repos $APPNAME
 cd $APPNAME
 find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:<自身が使用しているリージョン>:g'
@@ -379,7 +382,7 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 サービスデプロイモジュールのディレクトリへ移動します。
 
 ``` sh
-cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
+cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/$APPNAME/service-deploy
 ```
 
 `source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_idは自身の環境に合わせて修正してください。
@@ -387,11 +390,11 @@ cd $CLONEDIR/ecs-cicd/$PJNAME/$APPNAME/service-deploy
 **Linuxの場合**
 
 ``` sh
-sed -i  -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
-sed -i  -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
-sed -i  -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
-sed -i  -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
-sed -i  -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
+sed -i -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
+sed -i -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
+sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
+sed -i -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
+sed -i -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
 ```
 
 **macの場合**
@@ -414,9 +417,89 @@ terraform apply
 
 実行後に出力される`dns_name`はLBのDNS名です。コピーしてWEBブラウザでアクセスします。すべて上手く行けば以下のようなメッセージの画面が表示されます。なお、デプロイはterraform完了からさらに数分の時間を要します。デプロイ失敗なのか待ちなのか確認するには、マネジメントコンソールでcodepipelineの画面を開き現在の状況を追ってみるとよいでしょう。Deployが進行中であればまだしばらく待ったください。
 
+``` html
+<!DOCTYPE html>
+    <html lang="ja">
+        <body>
+            <h1>これはCICDでデプロイされたアプリケーション</h1>
+            <h1> ${env.appname} です。</h1>
+        </body>
+</html>`);
+```
+
 **作成後のイメージ**
 
 ![](./images/use-service.svg)
+
+## サービスの更新
+
+### アプリケーションの更新
+
+アプリケーションを更新して変更をGitLabにプッシュします。CICDにより自動で新しいアプリケーションがデプロイされることを確認します。
+
+`app`レポジトリに移動します。
+
+``` sh
+cd $CLONEDIR/app
+```
+
+`index.js`を修正します。以下の例では`これはCICDでデプロイされたアプリケーション`という文章を`ソースレポジトリを自動でデプロイされるアプリケーション`に置換しています。
+
+**Linuxの場合**
+
+``` sh
+sed -i -e 's:これはCICDでデプロイされたアプリケーション:ソースレポジトリを自動でデプロイされるアプリケーション:g' index.js
+```
+
+**macの場合**
+
+``` sh
+sed -i "" -e 's:これはCICDでデプロイされたアプリケーション:ソースレポジトリを自動でデプロイされるアプリケーション:g' index.js
+```
+
+変更をGitLabにプッシュします。
+
+``` sh
+git add .
+git commit -m "update text"
+git push
+```
+
+数分してからサービス（LB）のDNS名でアクセスしてみてください。先ほどまでとは画面の表示が変わるはずです。なお、アクセスしても画面が同じ場合、まだパイプラインの途中であることが考えられます。GitLab CICDまたはCodePipeline、Deployの状況を確認してみてください。
+
+### ECS設定の更新
+
+ECSの設定を更新して変更をGitLabにプッシュします。CICDにより自動で新しいアプリケーションがデプロイされることを確認します。
+
+`ecs`レポジトリに移動します。
+
+``` sh
+cd $CLONEDIR/ecs
+```
+
+`taskdef.json`を修正します。以下の例ではコンテナに付与する環境変数`appname`の値を`$APP-NMAE`->`cicd test update`に置換しています。
+
+**Linuxの場合**
+
+``` sh
+sed -i -e 's:\: "'$APPNAME'":\: "cicd test update":g' taskdef.json
+```
+
+**macの場合**
+
+``` sh
+sed -i "" -e 's:\: "'$APPNAME'":\: "cicd test update":g' taskdef.json
+```
+
+変更をGitLabにプッシュします。
+
+``` sh
+git add .
+git commit -m "update env"
+git push
+```
+
+しばらくしてからサービス（LB）のDNS名でアクセスしてみてください。先ほどまでとは画面の表示が変わるはずです。なお、アクセスしても画面が同じ場合、まだパイプラインの途中であることが考えられます。GitLab CICDまたはCodePipeline、Deployの状況を確認してみてください。
 
 ## サービスの追加
 

@@ -1,14 +1,4 @@
 # common parameter
-# variable "pj" {
-#   description = "リソース群に付与する名前の接頭語。プロジェクト名。"
-#   type        = string
-# }
-
-# variable "app" {
-#   description = "リソース群に付与する名前の接頭語。アプリケーション名。"
-#   type        = string
-# }
-
 variable "app_full" {
   description = "リソース群に付与する名前の接頭語。プロジェクト名-アプリケーション名。"
   type        = string

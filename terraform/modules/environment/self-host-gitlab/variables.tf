@@ -15,26 +15,6 @@ variable "vpc_id" {
 }
 
 # module parameter
-# variable "ec2_gitlab_url" {
-#   description = "GitLab Runnerのアクセス先となる、GitLabのURL"
-#   type        = string
-# }
-
-# variable "ec2_registration_token" {
-#   description = "グループrunnerとして登録するためのトークン"
-#   type        = string
-# }
-
-# variable "ec2_runner_name" {
-#   description = "GitLabで表示されるrunnerの名前"
-#   type        = string
-# }
-
-# variable "ec2_runner_tags" {
-#   description = "runnerに付与するタグのリスト"
-#   type        = list(string)
-# }
-
 variable "ec2_instance_type" {
   description = "GitLabのインスタンスタイプ"
   type        = string
