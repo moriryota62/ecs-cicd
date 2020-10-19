@@ -33,17 +33,19 @@ aws providor 3.5.0以上　
 
 # ディレクトリ説明
 
-利用者がおもに意識するディレクトリについて説明します。
+利用者がおもに意識するディレクトリ・ファイルについて説明します。
 
-- documents :本レポジトリのドキュメント一式を格納しています。
-  - module.md :用意しているterraformモジュールを説明したドキュメントです。
-  - cicd.md :CICDの流れを説明したドキュメントです。
-  - howtouse.md :本レポジトリのモジュールを使用して環境を構築する方法を解説したドキュメントです。
-- terraform :terraformのコード一式を格納しています。
-  - main-template :PJの環境(dev/stg等)ごとに使用するテンプレートです。
-    - environment :環境構築に使用するterraformコード一式です。
-    - service-template :ECSサービスごとに使用するテンプレートです。
-  - modules :モジュールを実装したコードを格納しています。
-- sample-repos :GitLab CICDのサンプルです。
-  - app :アプリケーションのサンプルです。
-  - ecs :ECS設定のサンプルです。
+|ディレクトリ・ファイル|説明|
+|-|-|
+|documents|本レポジトリのドキュメント一式を格納しています。|
+|  module.md|用意しているterraformモジュールを説明したドキュメントです。|
+|  cicd.md|CICDの流れを説明したドキュメントです。|
+|  howtouse.md|本レポジトリのモジュールを使用して環境を構築する方法を解説したドキュメントです。|
+|terraform|terraformのコード一式を格納しています。|
+|  main-template|PJの環境(dev/stg等)ごとに使用するテンプレートです。|
+|    environment|環境構築に使用するterraformコード一式です。|
+|    service-template|ECSサービスごとに使用するテンプレートです。|
+|  modules|モジュールを実装したコードを格納しています。|
+|sample-repos|GitLab CICDのサンプルです。|
+|  app|アプリケーションのサンプルです。|
+|  ecs|ECS設定のサンプルです。|
