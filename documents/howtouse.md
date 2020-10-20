@@ -143,7 +143,7 @@ terraform apply
 
 terraform実行後、以下の通りGitLabサーバにアクセスしてGitLabサーバの準備をしてください。
 
-- GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックIPまたはパブリックDNSを入力してください
+- GitLabサーバを構築したら許可した端末からGUIに接続します。ブラウザにEC2インスタンスのパブリックIPまたはパブリックDNSを入力してください。terraform完了後、つながらくしても繋がらない場合、インスタンスを再起動してみるとよいかもしれません。
 
 - 初回アクセスの場合、rootのパスワード変更を求められるため、パスワードを設定してください
 
@@ -157,7 +157,7 @@ terraform実行後、以下の通りGitLabサーバにアクセスしてGitLab�
 
 - 左メニューから[Overview]-[Groups]を開き`New group`を選択します。任意の名前のグループを作成してください。また、上記作成したユーザをグループのownerに設定してください
 
-- 一度rootからログアウトし、上記ユーザでログインしなおしてください
+- 一度rootからログアウトし、上記ユーザでログインしなおしてください。（初回ログインの場合パスワード変更が求められます。任意のパスワードに変更してください）
 
 - 上部メニューバーの[Groups]-[Your groups]を表示し、先ほど作成したグループを選択します
 
@@ -178,7 +178,7 @@ GitLab Runnerサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd/terraform/$PJNAME/environment/gitlab-runner
 ```
 
-`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。また、ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。
+`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。自動スケジュールを有効にする場合、対応する機能を`true`に設定してください。
 
 **Linuxの場合**
 
@@ -352,6 +352,7 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
   ``` sh
   cd $CLONEDIR
   git clone <appレポジトリのクローンURL>
+  # クローン時にID/パスワードが求められたら先ほどGitLabで作成したユーザでログイン
   cd app
   cp -r $CLONEDIR/ecs-cicd/$APPNAME/app/* ./
   mv gitlab-ci.yml ./.gitlab-ci.yml
@@ -365,6 +366,7 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
   ``` sh
   cd $CLONEDIR
   git clone <ecsレポジトリのクローンURL>
+  # クローン時にID/パスワードが求められたら先ほどGitLabで作成したユーザでログイン
   cd ecs
   cp -r $CLONEDIR/ecs-cicd/$APPNAME/ecs/* ./
   mv gitlab-ci.yml ./.gitlab-ci.yml

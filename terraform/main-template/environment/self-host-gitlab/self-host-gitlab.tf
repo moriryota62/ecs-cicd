@@ -17,7 +17,7 @@ locals {
   }
 
   ec2_subnet_id              = "PUBLIC-SUBNET-1"
-  ec2_instance_type          = "t2.medium"
+  ec2_instance_type          = "t2.large"
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""
 

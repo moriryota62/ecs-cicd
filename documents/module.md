@@ -40,7 +40,11 @@
 
 ### GitLab Runner
 
-`GitLab Runner`はGitLab CICDによるパイプライン処理を実行するGitLab Runnerサーバを構築するモジュールです。AMIは最新のAmazon Linuxを使用します。接続するGitLabサーバと認証用のトークンを設定し、Runnerのセットアップを行います。このセットアップはUserdataにより自動で行います。また、GitLab RunnerサーバにはCICD処理のためS3とECRへの書き込みを許可するIAMロールを割り当てます。
+`GitLab Runner`はGitLab CICDによるパイプライン処理を実行するGitLab Runnerサーバを構築するモジュールです。AMIは最新のAmazon Linuxを使用します。接続するGitLabサーバと認証用のトークンを設定し、Runnerのセットアップを行います。このセットアップはUserdataにより自動で行います。また、GitLab RunnerサーバにはCICD処理のためS3とECRへの書き込みを許可するIAMロールを割り当てます。また、以下の追加機能を任意で設定できます。追加機能はデフォルトでは`無効`にしています。
+
+|機能|説明|
+|-|-|
+|自動起動/停止スケジュール|GitLabサーバは自動で起動/停止するスケジュールを設定します。有効にした場合、デフォルトでは平日の日本時間09-19時の間に起動するように設定します。スケジュールは任意の値に変更可能です。|
 
 ### ECSクラスタ
 

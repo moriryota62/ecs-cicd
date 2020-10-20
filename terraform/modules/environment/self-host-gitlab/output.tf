@@ -1,9 +1,9 @@
 output "public_dns" {
-  value = aws_instance.gitlab.public_dns
+    value = aws_eip.gitlab.public_dns
 }
 
 output "public_ip" {
-  value = aws_instance.gitlab.public_ip
+    value = aws_eip.gitlab.public_ip
 }
 
 output "runner_sg_id" {

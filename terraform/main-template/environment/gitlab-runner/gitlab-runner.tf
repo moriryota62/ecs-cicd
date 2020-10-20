@@ -23,6 +23,11 @@ locals {
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""
   ec2_sg_id                  = "RUNNER-SG-ID"
+
+  ## 自動スケジュール
+  cloudwatch_enable_schedule = false
+  cloudwatch_start_schedule  = "cron(0 0 ? * MON-FRI *)"
+  cloudwatch_stop_schedule   = "cron(0 10 ? * MON-FRI *)"
 }
 
 module "gitlab-ecs-cicd-gitlab-runner" {
@@ -43,4 +48,8 @@ module "gitlab-ecs-cicd-gitlab-runner" {
   ec2_root_block_volume_size = local.ec2_root_block_volume_size
   ec2_key_name               = local.ec2_key_name
   ec2_sg_id                  = local.ec2_sg_id
+
+  cloudwatch_enable_schedule = local.cloudwatch_enable_schedule
+  cloudwatch_start_schedule  = local.cloudwatch_start_schedule
+  cloudwatch_stop_schedule   = local.cloudwatch_stop_schedule
 }

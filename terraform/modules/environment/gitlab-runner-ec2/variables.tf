@@ -59,3 +59,21 @@ variable "ec2_sg_id" {
   description = "GitLab Runnerに付与するSGのID"
   type        = string
 }
+
+variable "cloudwatch_enable_schedule" {
+  description = "GitLabインスタンスを自動起動/停止するか"
+  type        = bool
+  default     = false
+}
+
+variable "cloudwatch_start_schedule" {
+  description = "GitLabインスタンスを自動起動する時間。時間の指定はUTCのため注意"
+  type        = string
+  default     = "cron(0 0 ? * MON-FRI *)"
+}
+
+variable "cloudwatch_stop_schedule" {
+  description = "GitLabインスタンスを自動停止する時間。時間の指定はUTCのため注意"
+  type        = string
+  default     = "cron(0 10 ? * MON-FRI *)"
+}
