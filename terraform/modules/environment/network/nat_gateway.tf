@@ -1,10 +1,12 @@
 resource "aws_nat_gateway" "ngw" {
-  allocation_id = aws_eip.natgw.id
-  subnet_id     = aws_subnet.public[0].id
+  count = length(var.subnet_public_cidrs)
+
+  allocation_id = aws_eip.natgw[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
 
   tags = merge(
     {
-      "Name" = "${var.pj}-nat-gateway"
+      "Name" = "${var.pj}-nat-gateway-${count.index}"
     },
     var.tags
   )
