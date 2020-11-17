@@ -46,7 +46,7 @@ aws providor 3.5.0以上　
 │   └── ecs                   # ECS設定のサンプルです。
 └── terraform                 # terraformのコード一式を格納しています。
     ├── main-template         # PJの環境(dev/stg等)ごとに使用するテンプレートです。
-    │   ├── environment       # 境構築に使用するterraformコード一式です。
+    │   ├── environment       # 環境構築に使用するterraformコード一式です。
     │   └── service-template  # ECSサービスごとに使用するテンプレートです。
     └── modules               # モジュールを実装したコードを格納しています。
 ```
