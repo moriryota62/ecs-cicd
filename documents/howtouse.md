@@ -1,5 +1,6 @@
 - [使い方](#使い方)
   - [環境構築](#環境構築)
+    - [tfバックエンド](#tfバックエンド)
     - [ネットワーク](#ネットワーク)
     - [GitLabサーバ](#gitlabサーバ)
     - [GitLab Runner](#gitlab-runner)
@@ -67,9 +68,29 @@ find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$
 find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i "" -e 's:OWNER:nobody:g'
 ```
 
+### tfバックエンド
+
+Terraformのtfstateを保存するバックエンドを作成します。
+
+tfバックエンドモジュールのディレクトリへ移動します。
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/tf-backend
+```
+
+以下コマンドで作成します。
+
+``` sh
+terraform init
+terraform apply
+> yes
+```
+
+なお、以降の手順で作成するリソースの情報は上記手順で作成したS3バケットに保存されます。しかし、このモジュールで作成したS3やDynamoDBの情報は実行したディレクトリのtfstateファイルに保存されます。このtfstateファイルは削除しないようにしましょう。
+
 ### ネットワーク
 
-すでにVPCやサブネットがある場合、ネットワークのモジュールは実行しなくても良いです。その場合はVPCとサブネットのIDを確認しておいてください。ネットワークモジュールでVPCやサブネットを作成する場合は以下の手順で作成します。
+すでにVPCやサブネットがある場合、ネットワークのモジュールは実行しなくても良いです。その場合はVPCとサブネットのIDを確認し以降のモジュール内の`data.terraform_remote_state.network~`で定義している部分をハードコードで書き換えてください。ネットワークモジュールでVPCやサブネットを作成する場合は以下の手順で作成します。
 
 ネットワークモジュールのディレクトリへ移動します。
 
@@ -120,16 +141,12 @@ export YOURACCESSCIDR=<cidr>
 **Linuxの場合**
 
 ``` sh
-sed -i -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
-sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
 sed -i -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
 ```
 
 **macの場合**
 
 ``` sh
-sed -i "" -e 's:VPC-ID:'$VPCID':g' self-host-gitlab.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' self-host-gitlab.tf
 sed -i "" -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
 ```
 
@@ -185,25 +202,17 @@ cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/gitlab-runner
 **Linuxの場合**
 
 ``` sh
-sed -i -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
-sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
 # ↓sedで置換する時、http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
 sed -i -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf 
 sed -i -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
-# ↓セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
-sed -i -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
 ```
 
 **macの場合**
 
 ``` sh
-sed -i "" -e 's:VPC-ID:'$VPCID':g' gitlab-runner.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' gitlab-runner.tf
 # ↓sedで置換する時、http:の`:`の前にエスケープを入れてください。例 https\://gitlab.com
 sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.tf
 sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
-# ↓セフルホストの場合はSG ID ,SaaSの場合は次のように空で設定(s:RUNNER-SG-ID::g)
-sed -i "" -e 's:RUNNER-SG-ID:<GitLab RunnerのSG>:g' gitlab-runner.tf
 ```
 
 修正したら以下コマンドでモジュールを作成します。
@@ -256,14 +265,13 @@ export APPNAME=test-app
 cp -r service-template $APPNAME
 ```
 
-また、すべてのモジュールで共通して設定する`pj`、`app`、`vpc_id`の値はsedで置換しておくと後の手順が楽です。なお、ここで設定するpjの値は環境構築モジュールで設定したpjと同じ値にしてください。
+また、すべてのモジュールで共通して設定する`app`の値はsedで置換しておくと後の手順が楽です。
 
 **Linuxの場合**
 
 ``` sh
 cd $APPNAME
 find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i -e 's:APP-NAME:'$APPNAME':g'
-find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i -e 's:VPC-ID:'$VPCID':g'
 ```
 
 **macの場合**
@@ -271,7 +279,6 @@ find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i -e 's:VPC-ID:'$VPCID
 ``` sh
 cd $APPNAME
 find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:'$APPNAME':g'
-find ./ -type f -exec grep -l 'VPC-ID' {} \; | xargs sed -i "" -e 's:VPC-ID:'$VPCID':g'
 ```
 
 ### 事前準備
@@ -388,30 +395,6 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/$APPNAME/service-deploy
 ```
-
-`source.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_idは自身の環境に合わせて修正してください。
-
-**Linuxの場合**
-
-``` sh
-sed -i -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
-sed -i -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
-sed -i -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
-sed -i -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
-sed -i -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
-```
-
-**macの場合**
-
-``` sh
-sed -i "" -e 's:PRIVATE-SUBNET-1:'$PRIVATESUBNET1':g' service-deploy.tf
-sed -i "" -e 's:PRIVATE-SUBNET-2:'$PRIVATESUBNET2':g' service-deploy.tf
-sed -i "" -e 's:PUBLIC-SUBNET-1:'$PUBLICSUBNET1':g' service-deploy.tf
-sed -i "" -e 's:PUBLIC-SUBNET-2:'$PUBLICSUBNET2':g' service-deploy.tf
-sed -i "" -e 's:SERVICESGID:'$SGID':g' service-deploy.tf
-```
-
-修正したら以下コマンドでモジュールを作成します。
 
 ``` sh
 terraform init

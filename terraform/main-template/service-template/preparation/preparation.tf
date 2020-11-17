@@ -7,12 +7,25 @@ provider "aws" {
   region  = "REGION"
 }
 
+# inport network value
+data "terraform_remote_state" "network" {
+  backend = "s3"
+
+  config = {
+    bucket         = "PJ-NAME-tfstate"
+    key            = "network/terraform.tfstate"
+    encrypt        = true
+    dynamodb_table = "PJ-NAME-tfstate-lock"
+    region         = "REGION"
+  }
+}
+
 # common parameter settings
 locals {
   pj       = "PJ-NAME"
   app      = "APP-NAME"
   app_full = "${local.pj}-${local.app}"
-  vpc_id   = "VPC-ID"
+  vpc_id   = data.terraform_remote_state.network.outputs.vpc_id
   tags     = {
     pj     = "PJ-NAME"
     app    = "APP-NAME"

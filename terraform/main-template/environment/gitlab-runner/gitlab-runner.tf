@@ -7,10 +7,35 @@ provider "aws" {
   region  = "REGION"
 }
 
+# inport network value
+data "terraform_remote_state" "network" {
+  backend = "s3"
+
+  config = {
+    bucket         = "PJ-NAME-tfstate"
+    key            = "network/terraform.tfstate"
+    encrypt        = true
+    dynamodb_table = "PJ-NAME-tfstate-lock"
+    region         = "REGION"
+  }
+}
+
+data "terraform_remote_state" "gitlab" {
+  backend = "s3"
+
+  config = {
+    bucket         = "PJ-NAME-tfstate"
+    key            = "self-host-gitlab/terraform.tfstate"
+    encrypt        = true
+    dynamodb_table = "PJ-NAME-tfstate-lock"
+    region         = "REGION"
+  }
+}
+
 # cparameter settings
 locals {
   pj     = "PJ-NAME"
-  vpc_id = "VPC-ID"
+  vpc_id = data.terraform_remote_state.network.outputs.vpc_id
   tags = {
     pj     = "PJ-NAME"
     owner = "OWNER"
@@ -18,11 +43,11 @@ locals {
 
   ec2_gitlab_url             = "GITLAB-URL"
   ec2_registration_token     = "REGIST-TOKEN"
-  ec2_subnet                 = "PUBLIC-SUBNET-1"
+  ec2_subnet                 = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
   ec2_instance_type          = "t2.micro"
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""
-  ec2_sg_id                  = "RUNNER-SG-ID"
+  ec2_sg_id                  = data.terraform_remote_state.gitlab.outputs.runner_sg_id != null ? data.terraform_remote_state.gitlab.outputs.runner_sg_id : ""
 
   ## 自動スケジュール
   cloudwatch_enable_schedule = false

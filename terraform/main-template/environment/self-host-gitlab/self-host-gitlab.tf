@@ -7,16 +7,29 @@ provider "aws" {
   region  = "REGION"
 }
 
+# inport network value
+data "terraform_remote_state" "network" {
+  backend = "s3"
+
+  config = {
+    bucket         = "PJ-NAME-tfstate"
+    key            = "network/terraform.tfstate"
+    encrypt        = true
+    dynamodb_table = "PJ-NAME-tfstate-lock"
+    region         = "REGION"
+  }
+}
+
 # parameter settings
 locals {
   pj     = "PJ-NAME"
-  vpc_id = "VPC-ID"
+  vpc_id = data.terraform_remote_state.network.outputs.vpc_id
   tags   = {
     pj     = "PJ-NAME"
     owner = "OWNER"
   }
 
-  ec2_subnet_id              = "PUBLIC-SUBNET-1"
+  ec2_subnet_id              = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
   ec2_instance_type          = "t2.large"
   ec2_root_block_volume_size = 30
   ec2_key_name               = ""
