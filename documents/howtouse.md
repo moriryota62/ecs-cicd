@@ -14,6 +14,14 @@
     - [ECS設定の更新](#ecs設定の更新)
   - [サービスの追加](#サービスの追加)
   - [環境削除](#環境削除)
+    - [サービスデプロイの削除](#サービスデプロイの削除)
+    - [事前準備の削除](#事前準備の削除)
+    - [ECSクラスタ](#ecsクラスタ-1)
+    - [GitLab Runner](#gitlab-runner-1)
+    - [GitLabサーバ](#gitlabサーバ-1)
+    - [ネットワーク](#ネットワーク-1)
+    - [tfバックエンド](#tfバックエンド-1)
+    - [ディレクトリ等の掃除](#ディレクトリ等の掃除)
 
 # 使い方
 
@@ -51,7 +59,7 @@ cp -r main-template $PJNAME
 **Linuxの場合**
 
 ``` sh
-cd $PJNAME
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME
 export REGION=us-east-2
 find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i -e 's:REGION:'$REGION':g'
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i -e 's:PJ-NAME:'$PJNAME':g'
@@ -61,7 +69,7 @@ find ./ -type f -exec grep -l 'OWNER' {} \; | xargs sed -i -e 's:OWNER:nobody:g'
 **macの場合**
 
 ``` sh
-cd $PJNAME
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME
 export REGION=us-east-2
 find ./ -type f -exec grep -l 'REGION' {} \; | xargs sed -i "" -e 's:REGION:'$REGION':g'
 find ./ -type f -exec grep -l 'PJ-NAME' {} \; | xargs sed -i "" -e 's:PJ-NAME:'$PJNAME':g'
@@ -78,7 +86,7 @@ tfバックエンドモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/tf-backend
 ```
 
-以下コマンドで作成します。
+以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -100,7 +108,7 @@ cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/network
 
 `network.tf`を編集します。`locals`配下のパラメータを修正します。VPCやサブネットのCIDRは自身の環境にあわせて任意のアドレス帯に修正してください。
 
-修正したら以下コマンドでモジュールを作成します。
+修正したら以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -132,25 +140,23 @@ GitLabサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/self-host-gitlab
 ```
 
-`self-host-gitlab.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）、SGのインバウンドCIDRは自身の環境にあわせて変更してください。また、自動スケジュールや自動スナップショットを有効にする場合、対応する機能を`true`に設定してください。
-
-``` sh
-export YOURACCESSCIDR=<cidr>
-```
+`self-host-gitlab.tf`を編集します。とくにSGのインバウンドCIDRは自身の環境にあわせて変更する必要があります。以下コマンドのようにYOURACCESSCIDRを設定して置換します。また、自動スケジュールや自動スナップショットを有効にする場合、対応する機能を`true`に設定してください。
 
 **Linuxの場合**
 
 ``` sh
+export YOURACCESSCIDR=<cidr>
 sed -i -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
 ```
 
 **macの場合**
 
 ``` sh
+export YOURACCESSCIDR=<cidr>
 sed -i "" -e 's:YOURCIDR:'$YOURACCESSCIDR':g' self-host-gitlab.tf
 ```
 
-修正したら以下コマンドでモジュールを作成します。
+修正したら以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -197,7 +203,7 @@ GitLab Runnerサーバモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/gitlab-runner
 ```
 
-`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにvpc_idとsubnet_id（パブリックサブネットのID）は自身の環境に合わせて修正してください。ec2_gitlab_urlとec2_registration_tokenも`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。`ec2_sg_id`はセフルホストの場合、GitLabサーバモジュールのoutputで表示された`runner_sg_id`を設定してください。SaaS版GitLabの場合は`空文字`で設定してください。自動スケジュールを有効にする場合、対応する機能を`true`に設定してください。
+`gitlab-runner.tf`を編集します。`region`と`locals`配下のパラメータを修正します。とくにec2_gitlab_urlとec2_registration_tokenを`GitLabサーバ`モジュールで確認した値に必ず修正してください。SaaS版GitLabの場合、urlは`https://gitlab.com`になります。
 
 **Linuxの場合**
 
@@ -215,7 +221,7 @@ sed -i "" -e 's:GITLAB-URL:<先ほどGitLabで確認したURL>:g' gitlab-runner.
 sed -i "" -e 's:REGIST-TOKEN:<先ほどGitLabで確認したregistraton_token>:g' gitlab-runner.tf
 ```
 
-修正したら以下コマンドでモジュールを作成します。
+修正したら以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -241,9 +247,7 @@ ECSクラスタモジュールのディレクトリへ移動します。
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/ecs-cluster
 ```
 
-`ecs-cluster.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
-
-修正したら以下コマンドでモジュールを作成します。
+以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -289,9 +293,7 @@ find ./ -type f -exec grep -l 'APP-NAME' {} \; | xargs sed -i "" -e 's:APP-NAME:
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/$APPNAME/preparation
 ```
 
-`preparation.tf`を編集します。`region`と`locals`配下のパラメータを修正します。（今までの置換コマンドを実行している場合はとくに不要です。）
-
-修正したら以下コマンドでモジュールを作成します。
+以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -388,6 +390,10 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 
 - 上手く実行できればECRおよびS3にデータが格納でてきるはずなので確認してください
 
+**作業後のイメージ**
+
+![](./images/use-gitpush.svg)
+
 ### サービスデプロイ
 
 サービスデプロイモジュールのディレクトリへ移動します。
@@ -395,6 +401,8 @@ find ./ -type f -exec grep -l 'PRIVATE-SUBNET-2' {} \; | xargs sed -i "" -e 's:P
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/$APPNAME/service-deploy
 ```
+
+以下コマンドでリソースを作成します。
 
 ``` sh
 terraform init
@@ -493,9 +501,71 @@ git push
 
 構築したときの逆の以下モジュール順に`terraform destroy`を実行してください。
 
-1. サービスデプロイ
-2. 事前準備
-3. ECSクラスタ
-4. GitLab Runner
-5. GitLabサーバ
-6. ネットワーク
+### サービスデプロイの削除
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/$APPNAME/service-deploy
+terraform destroy
+> yes
+```
+
+### 事前準備の削除
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/$APPNAME/preparation
+terraform destroy
+> yes
+```
+
+### ECSクラスタ
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/ecs-cluster
+terraform destroy
+> yes
+```
+
+### GitLab Runner
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/gitlab-runner
+terraform destroy
+> yes
+```
+
+### GitLabサーバ
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/self-host-gitlab
+terraform destroy
+> yes
+```
+
+### ネットワーク
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/network
+terraform destroy
+> yes
+```
+
+### tfバックエンド
+
+バックエンドはバケットにデータが残っていると削除できません。マネージメントコンソールなどでS3バケット内のでデータを先に削除してください。また、バージョニングを有効にしているため、すべてのバージョンを表示してから削除するようにしてください。すべてのデータを消したら以下コマンドでリソースを削除します。
+
+``` sh
+cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/tf-backend
+terraform destroy
+> yes
+```
+
+### ディレクトリ等の掃除
+
+以下ディレクトリも削除します。
+
+``` sh
+rm -rf $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME
+rm -rf $CLONEDIR/ecs-cicd-gitlab/$APPNAME
+rm -rf $CLONEDIR/app
+rm -rf $CLONEDIR/ecs
+```
