@@ -16,11 +16,11 @@
   - [環境削除](#環境削除)
     - [サービスデプロイの削除](#サービスデプロイの削除)
     - [事前準備の削除](#事前準備の削除)
-    - [ECSクラスタ](#ecsクラスタ-1)
-    - [GitLab Runner](#gitlab-runner-1)
-    - [GitLabサーバ](#gitlabサーバ-1)
-    - [ネットワーク](#ネットワーク-1)
-    - [tfバックエンド](#tfバックエンド-1)
+    - [ECSクラスタの削除](#ecsクラスタの削除)
+    - [GitLab Runnerの削除](#gitlab-runnerの削除)
+    - [GitLabサーバの削除](#gitlabサーバの削除)
+    - [ネットワークの削除](#ネットワークの削除)
+    - [tfバックエンドの削除](#tfバックエンドの削除)
     - [ディレクトリ等の掃除](#ディレクトリ等の掃除)
 
 # 使い方
@@ -521,7 +521,7 @@ terraform destroy
 > yes
 ```
 
-### ECSクラスタ
+### ECSクラスタの削除
 
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/ecs-cluster
@@ -529,7 +529,7 @@ terraform destroy
 > yes
 ```
 
-### GitLab Runner
+### GitLab Runnerの削除
 
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/gitlab-runner
@@ -537,7 +537,7 @@ terraform destroy
 > yes
 ```
 
-### GitLabサーバ
+### GitLabサーバの削除
 
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/self-host-gitlab
@@ -545,7 +545,7 @@ terraform destroy
 > yes
 ```
 
-### ネットワーク
+### ネットワークの削除
 
 ``` sh
 cd $CLONEDIR/ecs-cicd-gitlab/terraform/$PJNAME/environment/network
@@ -553,7 +553,7 @@ terraform destroy
 > yes
 ```
 
-### tfバックエンド
+### tfバックエンドの削除
 
 バックエンドはバケットにデータが残っていると削除できません。マネージメントコンソールなどでS3バケット内のでデータを先に削除してください。また、バージョニングを有効にしているため、すべてのバージョンを表示してから削除するようにしてください。すべてのデータを消したら以下コマンドでリソースを削除します。
 
